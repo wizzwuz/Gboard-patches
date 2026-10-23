@@ -179,22 +179,22 @@ public final class GboardFrostedGlassDirectBootTest {
 
     @Test
     public void floatingKeyboardDetectedAndPreservesGeometry() {
-        FrameLayout decor = new FrameLayout(application);
-        View floatingRoot = new View(application);
-        floatingRoot.setTag(".keyboard-base-area");
-        floatingRoot.setVisibility(View.VISIBLE);
-        decor.addView(floatingRoot);
+        Assert.assertTrue(GboardFrostedGlassRuntime.isBoundedSurface(300, 1000));
+        Assert.assertFalse(GboardFrostedGlassRuntime.isBoundedSurface(1000, 1000));
 
-        Assert.assertFalse(GboardFrostedGlassRuntime.isDockedKeyboard(decor));
-        Assert.assertTrue(GboardFrostedGlassRuntime.isFloatingKeyboard(decor));
+        TestInputMethodService service = Robolectric.setupService(TestInputMethodService.class);
+        Dialog dialog = service.getWindow();
+        Window window = dialog != null ? dialog.getWindow() : null;
+        Assert.assertNotNull(window);
 
-        View dockedRoot = new View(application);
-        dockedRoot.setTag(".keyboard-base-area.keyboard-outline");
-        dockedRoot.setVisibility(View.VISIBLE);
-        decor.addView(dockedRoot);
+        // Standard docked window is not floating
+        Assert.assertFalse(GboardFrostedGlassRuntime.isFloatingKeyboard(window));
 
-        Assert.assertTrue(GboardFrostedGlassRuntime.isDockedKeyboard(decor));
-        Assert.assertFalse(GboardFrostedGlassRuntime.isFloatingKeyboard(decor));
+        // When window is configured as MATCH_PARENT without Gravity.BOTTOM, it is floating
+        window.setLayout(android.view.WindowManager.LayoutParams.MATCH_PARENT,
+                android.view.WindowManager.LayoutParams.MATCH_PARENT);
+        window.setGravity(android.view.Gravity.TOP);
+        Assert.assertTrue(GboardFrostedGlassRuntime.isFloatingKeyboard(window));
     }
 
     @Test

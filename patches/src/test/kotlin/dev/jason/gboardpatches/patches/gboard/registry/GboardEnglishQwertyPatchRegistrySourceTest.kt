@@ -38,7 +38,7 @@ class GboardEnglishQwertyPatchRegistrySourceTest {
         )
 
         val patchStart = source.indexOf("val gboardEnglishQwertySlideUppercaseTogglePatch")
-        val nextPatchStart = source.indexOf("val gboardZhuyinQuickTraditionalSimplifiedTogglePatch")
+        val nextPatchStart = source.indexOf("val gboardLongPressQuickActionsPatch")
         assertTrue("English QWERTY patch missing", patchStart >= 0)
         assertTrue("Expected following patch boundary", nextPatchStart > patchStart)
 
@@ -70,7 +70,7 @@ class GboardEnglishQwertyPatchRegistrySourceTest {
         val source = readSource()
 
         val patchStart = source.indexOf("val gboardEnglishQwertySlideUppercaseTogglePatch")
-        val nextPatchStart = source.indexOf("val gboardZhuyinQuickTraditionalSimplifiedTogglePatch")
+        val nextPatchStart = source.indexOf("val gboardLongPressQuickActionsPatch")
         assertTrue("English QWERTY patch missing", patchStart >= 0)
         assertTrue("Expected following patch boundary", nextPatchStart > patchStart)
 

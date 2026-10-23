@@ -216,13 +216,14 @@ public final class GboardFrostedGlassRuntime {
             if (!isUserUnlocked(context) || !GboardFrostedGlassSettingsRuntime.isEnabled()) {
                 return;
             }
-            if (left == oldLeft && top == oldTop && right == oldRight && bottom == oldBottom) {
-                return;
-            }
             long generation = ++state.layoutGeneration;
-            view.postDelayed(() -> reapplyAfterLayout(window, context, state, generation), 48L);
+            view.postDelayed(() -> reapplyAfterLayout(window, context, state, generation), 32L);
         };
         decor.addOnLayoutChangeListener(listener);
+        View inputArea = decor.findViewById(android.R.id.inputArea);
+        if (inputArea != null && inputArea != decor) {
+            inputArea.addOnLayoutChangeListener(listener);
+        }
         state.decorLayoutObserverInstalled = true;
         state.decorLayoutObserver = listener;
     }
@@ -255,15 +256,8 @@ public final class GboardFrostedGlassRuntime {
                 return;
             }
             View root = findVisibleKeyboardRoot(decor);
-            if (root == null) {
-                if (GboardFrostedGlassSettingsRuntime.isStylusCompatEnabled(context)) {
-                    clearBlurEffects(window, state);
-                    restoreKeyboardLayout(state);
-                    restoreWindowGeometry(window, state);
-                    return;
-                }
-            }
-            if (isFloatingKeyboard(decor)) {
+            boolean floating = isFloatingKeyboard(window, state);
+            if (floating) {
                 restoreKeyboardLayout(state);
                 restoreWindowGeometry(window, state);
             } else if (root != null) {
@@ -294,17 +288,10 @@ public final class GboardFrostedGlassRuntime {
                 return;
             }
             View root = findVisibleKeyboardRoot(decor);
-            if (root == null) {
-                if (GboardFrostedGlassSettingsRuntime.isStylusCompatEnabled(context)) {
-                    clearBlurEffects(window, state);
-                    restoreKeyboardLayout(state);
-                    restoreWindowGeometry(window, state);
-                    return;
-                }
-            }
             int radiusPx = GboardFrostedGlassSettingsRuntime.blurRadiusPx();
             int customOpacity = GboardFrostedGlassSettingsRuntime.customOpacityPercent();
-            if (isFloatingKeyboard(decor)) {
+            boolean floating = isFloatingKeyboard(window, state);
+            if (floating) {
                 if (!state.windowBackgroundChanged) {
                     state.originalWindowBackground = decor.getBackground();
                     window.setBackgroundDrawable(transparentRoundedBackground(context));
@@ -312,30 +299,6 @@ public final class GboardFrostedGlassRuntime {
                 }
                 if (applyMiuiLocalBlur(window, decor, radiusPx, customOpacity, state, root)) {
                     Log.i(TAG, "applied floating local radius=" + radiusPx);
-                    return;
-                }
-                clearBlurEffects(window, state);
-                return;
-            }
-            if (!isBoundedSurface(window)) {
-                if (!state.windowBackgroundChanged) {
-                    state.originalWindowBackground = decor.getBackground();
-                    window.setBackgroundDrawable(transparentRoundedBackground(context));
-                    state.windowBackgroundChanged = true;
-                }
-                if (applyMiuiLocalBlur(window, decor, radiusPx, customOpacity, state, root)) {
-                    Log.i(TAG, "applied local radius=" + radiusPx);
-                    return;
-                }
-                if (canUseBackgroundBlur(context)) {
-                    window.clearFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND);
-                    if (!state.windowBlurApplied || state.appliedRadius != radiusPx) {
-                        window.setBackgroundBlurRadius(radiusPx);
-                        state.windowBlurApplied = true;
-                        state.appliedRadius = radiusPx;
-                    }
-                    state.applied = true;
-                    Log.i(TAG, "applied fallback window blur radius=" + radiusPx);
                     return;
                 }
                 clearBlurEffects(window, state);
@@ -359,6 +322,7 @@ public final class GboardFrostedGlassRuntime {
                 state.windowBlurApplied = true;
                 state.appliedRadius = radiusPx;
             }
+            applyThemeOpacity(decor, customOpacity, state);
             state.applied = true;
             Log.i(TAG, "applied bounded radius=" + radiusPx);
         } catch (Throwable ignored) {
@@ -635,13 +599,40 @@ public final class GboardFrostedGlassRuntime {
         }
     }
 
+
+
+    static boolean isFloatingKeyboard(Window window) {
+        return isFloatingKeyboard(window, null);
+    }
+
+    static boolean isFloatingKeyboard(Window window, State state) {
+        if (window == null) {
+            return false;
+        }
+        View decor = window.getDecorView();
+        if (decor != null && decor.getHeight() > 0) {
+            return !isBoundedSurface(window);
+        }
+        if (state != null && state.originalHeight == WindowManager.LayoutParams.MATCH_PARENT
+                && (state.originalGravity & Gravity.BOTTOM) != Gravity.BOTTOM) {
+            return true;
+        }
+        WindowManager.LayoutParams lp = window.getAttributes();
+        return lp != null && lp.height == WindowManager.LayoutParams.MATCH_PARENT
+                && (lp.gravity & Gravity.BOTTOM) != Gravity.BOTTOM;
+    }
+
     static boolean isDockedKeyboard(View decor) {
-        return findVisibleViewWithTag(decor, KEYBOARD_ROOT_TAG) != null;
+        return findVisibleKeyboardRoot(decor) != null;
     }
 
     static boolean isFloatingKeyboard(View decor) {
-        return !isDockedKeyboard(decor)
-                && findVisibleViewWithTag(decor, FLOATING_KEYBOARD_ROOT_TAG) != null;
+        if (decor == null) return false;
+        View root = decor.getRootView();
+        if (root != null && root.getHeight() > 0 && decor.getHeight() > 0) {
+            return !isBoundedSurface(decor.getHeight(), root.getHeight());
+        }
+        return false;
     }
 
     private static View findVisibleKeyboardRoot(View decor) {
@@ -652,7 +643,32 @@ public final class GboardFrostedGlassRuntime {
         if (root == null) {
             root = findVisibleViewWithTag(decor, FLOATING_KEYBOARD_ROOT_TAG);
         }
+        if (root == null) {
+            root = findVisibleViewWithTagContaining(decor, ".keyboard-body-area");
+        }
+        if (root == null) {
+            View inputArea = decor.findViewById(android.R.id.inputArea);
+            if (inputArea != null && isUsableRoot(inputArea)) {
+                root = inputArea;
+            }
+        }
         return (root != null && isUsableRoot(root)) ? root : null;
+    }
+
+    private static View findVisibleViewWithTagContaining(View view, String substring) {
+        if (view == null) return null;
+        Object tag = view.getTag();
+        if (tag instanceof String tagString && tagString.contains(substring)
+                && view.getVisibility() == View.VISIBLE) {
+            return view;
+        }
+        if (view instanceof ViewGroup group) {
+            for (int i = 0; i < group.getChildCount(); i++) {
+                View found = findVisibleViewWithTagContaining(group.getChildAt(i), substring);
+                if (found != null) return found;
+            }
+        }
+        return null;
     }
 
     private static View findVisibleViewWithTag(View view, String expectedTag) {
@@ -675,8 +691,8 @@ public final class GboardFrostedGlassRuntime {
     }
 
     private static void applyThemeOpacity(View view, int customOpacity, State state) {
-        Object tag = view.getTag();
-        if (tag instanceof String tagString && isThemeSurfaceTag(tagString)) {
+        if (view == null) return;
+        if (isThemeSurfaceView(view)) {
             Drawable background = view.getBackground();
             if (view != state.localBlurView && background != null
                     && background != state.localBlurDrawable
@@ -702,11 +718,25 @@ public final class GboardFrostedGlassRuntime {
     }
 
     private static boolean isThemeSurfaceTag(String tag) {
-        return tag.equals(".keyboard-base-area")
-                || tag.equals(".keyboard-base-area.keyboard-outline")
+        if (tag == null) return false;
+        return tag.contains(".keyboard-base-area")
                 || tag.contains(".keyboard-header-area")
                 || tag.contains(".keyboard-body-area")
-                || tag.startsWith(".candidates-area");
+                || tag.contains(".candidates-area")
+                || tag.contains("trackpad")
+                || tag.contains("cursor");
+    }
+
+    private static boolean isThemeSurfaceView(View view) {
+        if (view == null) return false;
+        Object tag = view.getTag();
+        if (tag instanceof String tagString && isThemeSurfaceTag(tagString)) {
+            return true;
+        }
+        String className = view.getClass().getName();
+        return className.contains("SoftKeyboardView")
+                || className.contains("Trackpad")
+                || className.contains("Cursor");
     }
 
     private static void restoreLocalBackground(State state) {
