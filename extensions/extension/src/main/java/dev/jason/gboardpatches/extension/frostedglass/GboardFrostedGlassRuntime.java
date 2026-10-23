@@ -61,7 +61,7 @@ public final class GboardFrostedGlassRuntime {
             }
             if (!GboardFrostedGlassSettingsRuntime.isEnabled()
                     || fullscreen || candidatesOnly || !canUseBackgroundBlur(service)
-                    || shouldSkipForStylus(service)) {
+                    || shouldSkipForStylus(service, window, window.getDecorView())) {
                 disable(window);
                 return;
             }
@@ -86,7 +86,7 @@ public final class GboardFrostedGlassRuntime {
             if (!GboardFrostedGlassSettingsRuntime.isEnabled()
                     || fullscreen || candidatesOnly || context == null
                     || !canUseBackgroundBlur(context)
-                    || shouldSkipForStylus(context)) {
+                    || shouldSkipForStylus(context, window, window.getDecorView())) {
                 disable(window);
                 return;
             }
@@ -111,7 +111,7 @@ public final class GboardFrostedGlassRuntime {
                 return;
             }
             if (!GboardFrostedGlassSettingsRuntime.isEnabled()
-                    || shouldSkipForStylus(service)) {
+                    || shouldSkipForStylus(service, window, window.getDecorView())) {
                 disable(window);
                 return;
             }
@@ -125,7 +125,7 @@ public final class GboardFrostedGlassRuntime {
                         if (isUserUnlocked(service)
                                 && GboardFrostedGlassSettingsRuntime.isEnabled()
                                 && canUseBackgroundBlur(service)
-                                && !shouldSkipForStylus(service)) {
+                                && !shouldSkipForStylus(service, window, decor)) {
                             scheduleApply(window, service);
                         } else {
                             disable(window);
@@ -186,10 +186,23 @@ public final class GboardFrostedGlassRuntime {
     }
 
     private static boolean shouldSkipForStylus(Context context) {
+        return shouldSkipForStylus(context, null, null);
+    }
+
+    private static boolean shouldSkipForStylus(Context context, Window window, View decor) {
         if (!GboardFrostedGlassSettingsRuntime.isStylusCompatEnabled(context)) {
             return false;
         }
-        return !isInputViewShown(context);
+        if (!isInputViewShown(context)) {
+            return true;
+        }
+        if (decor != null) {
+            View root = findVisibleKeyboardRoot(decor);
+            if (root == null && isFloatingKeyboard(window)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static void reapplyAfterLayout(Window window, Context context,
@@ -213,6 +226,9 @@ public final class GboardFrostedGlassRuntime {
         }
         View.OnLayoutChangeListener listener = (view, left, top, right, bottom,
                 oldLeft, oldTop, oldRight, oldBottom) -> {
+            if (left == oldLeft && top == oldTop && right == oldRight && bottom == oldBottom) {
+                return;
+            }
             if (!isUserUnlocked(context) || !GboardFrostedGlassSettingsRuntime.isEnabled()) {
                 return;
             }
@@ -220,10 +236,6 @@ public final class GboardFrostedGlassRuntime {
             view.postDelayed(() -> reapplyAfterLayout(window, context, state, generation), 32L);
         };
         decor.addOnLayoutChangeListener(listener);
-        View inputArea = decor.findViewById(android.R.id.inputArea);
-        if (inputArea != null && inputArea != decor) {
-            inputArea.addOnLayoutChangeListener(listener);
-        }
         state.decorLayoutObserverInstalled = true;
         state.decorLayoutObserver = listener;
     }
@@ -249,7 +261,7 @@ public final class GboardFrostedGlassRuntime {
                 return;
             }
             installDecorLayoutObserver(window, context, decor, state);
-            if (shouldSkipForStylus(context)) {
+            if (shouldSkipForStylus(context, window, decor)) {
                 clearBlurEffects(window, state);
                 restoreKeyboardLayout(state);
                 restoreWindowGeometry(window, state);
@@ -263,6 +275,9 @@ public final class GboardFrostedGlassRuntime {
             } else if (root != null) {
                 applyWindowGeometry(window, state);
                 constrainKeyboardSurface(decor, state, root);
+            } else {
+                applyWindowGeometry(window, state);
+                restoreKeyboardLayout(state);
             }
             decor.postDelayed(() -> verifyAndApply(window, context, state), 32L);
         } catch (Throwable ignored) {
@@ -281,7 +296,7 @@ public final class GboardFrostedGlassRuntime {
                 disable(window);
                 return;
             }
-            if (shouldSkipForStylus(context)) {
+            if (shouldSkipForStylus(context, window, decor)) {
                 clearBlurEffects(window, state);
                 restoreKeyboardLayout(state);
                 restoreWindowGeometry(window, state);
@@ -541,6 +556,11 @@ public final class GboardFrostedGlassRuntime {
 
     private static void applyWindowGeometry(Window window, State state) {
         try {
+            WindowManager.LayoutParams lp = window.getAttributes();
+            if (lp != null && lp.height == WindowManager.LayoutParams.WRAP_CONTENT
+                    && (lp.gravity & Gravity.BOTTOM) == Gravity.BOTTOM) {
+                return;
+            }
             window.clearFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND);
             window.setLayout(WindowManager.LayoutParams.MATCH_PARENT,
                     WindowManager.LayoutParams.WRAP_CONTENT);
@@ -568,22 +588,26 @@ public final class GboardFrostedGlassRuntime {
         if (root == null) {
             return;
         }
-        setWrapContentBottom(root, state);
+        View inputArea = decor.findViewById(android.R.id.inputArea);
+        if (root == inputArea) {
+            return;
+        }
+        boolean anyChanged = setWrapContentBottom(root, state);
         View parent = root.getParent() instanceof View ? (View) root.getParent() : null;
-        while (parent != null && parent != decor) {
+        while (parent != null && parent != decor && parent != inputArea) {
             if ("com.google.android.libraries.inputmethod.inputview.InputView"
                     .equals(parent.getClass().getName())) {
-                setWrapContentBottom(parent, state);
+                anyChanged |= setWrapContentBottom(parent, state);
                 break;
             }
             parent = parent.getParent() instanceof View ? (View) parent.getParent() : null;
         }
-        View inputArea = decor.findViewById(android.R.id.inputArea);
-        if (inputArea != null) setWrapContentBottom(inputArea, state);
-        root.requestLayout();
+        if (anyChanged) {
+            root.requestLayout();
+        }
     }
 
-    private static void setWrapContentBottom(View view, State state) {
+    private static boolean setWrapContentBottom(View view, State state) {
         ViewGroup.LayoutParams params = view.getLayoutParams();
         if (params != null) {
             if (!state.originalLayouts.containsKey(view)) {
@@ -595,8 +619,12 @@ public final class GboardFrostedGlassRuntime {
                 changed |= frame.gravity != Gravity.BOTTOM;
                 frame.gravity = Gravity.BOTTOM;
             }
-            if (changed) view.setLayoutParams(params);
+            if (changed) {
+                view.setLayoutParams(params);
+                return true;
+            }
         }
+        return false;
     }
 
 
@@ -609,17 +637,39 @@ public final class GboardFrostedGlassRuntime {
         if (window == null) {
             return false;
         }
-        View decor = window.getDecorView();
-        if (decor != null && decor.getHeight() > 0) {
-            return !isBoundedSurface(window);
-        }
-        if (state != null && state.originalHeight == WindowManager.LayoutParams.MATCH_PARENT
-                && (state.originalGravity & Gravity.BOTTOM) != Gravity.BOTTOM) {
-            return true;
-        }
         WindowManager.LayoutParams lp = window.getAttributes();
-        return lp != null && lp.height == WindowManager.LayoutParams.MATCH_PARENT
-                && (lp.gravity & Gravity.BOTTOM) != Gravity.BOTTOM;
+        if (lp != null) {
+            int gravity = (state != null && state.windowGeometryChanged)
+                    ? state.originalGravity : lp.gravity;
+            if (gravity != Gravity.NO_GRAVITY && (gravity & Gravity.BOTTOM) != Gravity.BOTTOM) {
+                return true;
+            }
+            int width = (state != null && state.windowGeometryChanged)
+                    ? state.originalWidth : lp.width;
+            if (width > 0 && width != WindowManager.LayoutParams.MATCH_PARENT) {
+                return true;
+            }
+        }
+        View decor = window.getDecorView();
+        if (decor != null) {
+            boolean hasDockedOutline = findVisibleViewWithTag(decor, KEYBOARD_ROOT_TAG) != null;
+            boolean hasFloatingBase = findVisibleViewWithTag(decor, FLOATING_KEYBOARD_ROOT_TAG) != null;
+            if (!hasDockedOutline && hasFloatingBase) {
+                return true;
+            }
+            int decorWidth = decor.getWidth();
+            if (decorWidth > 0) {
+                DisplayMetrics metrics = new DisplayMetrics();
+                try {
+                    window.getWindowManager().getDefaultDisplay().getRealMetrics(metrics);
+                    if (metrics.widthPixels > 0 && decorWidth < Math.round(metrics.widthPixels * 0.85f)) {
+                        return true;
+                    }
+                } catch (Throwable ignored) {
+                }
+            }
+        }
+        return false;
     }
 
     static boolean isDockedKeyboard(View decor) {
@@ -628,9 +678,14 @@ public final class GboardFrostedGlassRuntime {
 
     static boolean isFloatingKeyboard(View decor) {
         if (decor == null) return false;
+        boolean hasDockedOutline = findVisibleViewWithTag(decor, KEYBOARD_ROOT_TAG) != null;
+        boolean hasFloatingBase = findVisibleViewWithTag(decor, FLOATING_KEYBOARD_ROOT_TAG) != null;
+        if (!hasDockedOutline && hasFloatingBase) {
+            return true;
+        }
         View root = decor.getRootView();
-        if (root != null && root.getHeight() > 0 && decor.getHeight() > 0) {
-            return !isBoundedSurface(decor.getHeight(), root.getHeight());
+        if (root != null && root.getWidth() > 0 && decor.getWidth() > 0) {
+            return decor.getWidth() < Math.round(root.getWidth() * 0.85f);
         }
         return false;
     }
@@ -647,10 +702,10 @@ public final class GboardFrostedGlassRuntime {
             root = findVisibleViewWithTagContaining(decor, ".keyboard-body-area");
         }
         if (root == null) {
-            View inputArea = decor.findViewById(android.R.id.inputArea);
-            if (inputArea != null && isUsableRoot(inputArea)) {
-                root = inputArea;
-            }
+            root = findVisibleViewWithTagContaining(decor, "trackpad");
+        }
+        if (root == null) {
+            root = findVisibleViewWithTagContaining(decor, "cursor");
         }
         return (root != null && isUsableRoot(root)) ? root : null;
     }
@@ -701,13 +756,19 @@ public final class GboardFrostedGlassRuntime {
             }
             if (view != state.localBlurView && background != null
                     && background != state.localBlurDrawable) {
-                background.setAlpha(customOpacity >= 0
-                        ? customOpacity : state.originalSurfaceAlphas.get(view));
-                view.invalidate();
+                int targetAlpha = customOpacity >= 0
+                        ? customOpacity : state.originalSurfaceAlphas.getOrDefault(view, 255);
+                if (background.getAlpha() != targetAlpha) {
+                    background.setAlpha(targetAlpha);
+                    view.invalidate();
+                }
             } else if (view == state.localBlurView && state.localOriginalBackground != null) {
-                state.localOriginalBackground.setAlpha(customOpacity >= 0
-                        ? customOpacity : state.localOriginalAlpha);
-                view.invalidate();
+                int targetAlpha = customOpacity >= 0
+                        ? customOpacity : state.localOriginalAlpha;
+                if (state.localOriginalBackground.getAlpha() != targetAlpha) {
+                    state.localOriginalBackground.setAlpha(targetAlpha);
+                    view.invalidate();
+                }
             }
         }
         if (view instanceof android.view.ViewGroup group) {

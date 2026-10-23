@@ -195,6 +195,28 @@ public final class GboardFrostedGlassDirectBootTest {
                 android.view.WindowManager.LayoutParams.MATCH_PARENT);
         window.setGravity(android.view.Gravity.TOP);
         Assert.assertTrue(GboardFrostedGlassRuntime.isFloatingKeyboard(window));
+
+        // When window is configured with narrower width, it is floating
+        window.setLayout(500, 800);
+        window.setGravity(android.view.Gravity.BOTTOM);
+        Assert.assertTrue(GboardFrostedGlassRuntime.isFloatingKeyboard(window));
+    }
+
+    @Test
+    public void clipboardModePreservesDockedGeometry() {
+        GboardFrostedGlassSettings.writeEnabled(application, true);
+        TestInputMethodService service = Robolectric.setupService(TestInputMethodService.class);
+        service.setCustomInputViewShown(true);
+        Dialog dialog = service.getWindow();
+        Window window = dialog != null ? dialog.getWindow() : null;
+        Assert.assertNotNull(window);
+
+        window.setLayout(android.view.WindowManager.LayoutParams.MATCH_PARENT,
+                android.view.WindowManager.LayoutParams.MATCH_PARENT);
+        window.setGravity(android.view.Gravity.BOTTOM);
+
+        GboardFrostedGlassLifecycleRuntime.afterConfigureWindow(window, false, false);
+        Assert.assertFalse(GboardFrostedGlassRuntime.isFloatingKeyboard(window));
     }
 
     @Test
