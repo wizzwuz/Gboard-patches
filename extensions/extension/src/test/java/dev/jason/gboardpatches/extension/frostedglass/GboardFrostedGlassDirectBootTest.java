@@ -113,6 +113,50 @@ public final class GboardFrostedGlassDirectBootTest {
     }
 
     @Test
+    public void frostedGlassSkipsStylusHandwritingWhenInputViewNotShown() {
+        GboardFrostedGlassSettings.writeEnabled(application, true);
+        TestInputMethodService service = Robolectric.setupService(TestInputMethodService.class);
+        service.setCustomInputViewShown(false);
+        Dialog dialog = service.getWindow();
+        Window window = dialog != null ? dialog.getWindow() : null;
+        Assert.assertNotNull(window);
+
+        int originalGravity = window.getAttributes().gravity;
+        int originalWidth = window.getAttributes().width;
+        int originalHeight = window.getAttributes().height;
+
+        GboardFrostedGlassLifecycleRuntime.onInputViewStarted(service);
+        GboardFrostedGlassLifecycleRuntime.afterConfigureWindow(window, false, false);
+
+        // Window geometry must remain untouched when input view is not shown (stylus floating toolbar)
+        Assert.assertEquals(originalGravity, window.getAttributes().gravity);
+        Assert.assertEquals(originalWidth, window.getAttributes().width);
+        Assert.assertEquals(originalHeight, window.getAttributes().height);
+    }
+
+    @Test
+    public void frostedGlassRestoresGeometryWhenKeyboardRootAbsent() {
+        GboardFrostedGlassSettings.writeEnabled(application, true);
+        TestInputMethodService service = Robolectric.setupService(TestInputMethodService.class);
+        service.setCustomInputViewShown(true);
+        Dialog dialog = service.getWindow();
+        Window window = dialog != null ? dialog.getWindow() : null;
+        Assert.assertNotNull(window);
+
+        int originalGravity = window.getAttributes().gravity;
+        int originalWidth = window.getAttributes().width;
+        int originalHeight = window.getAttributes().height;
+
+        // No keyboard root view added to decor
+        GboardFrostedGlassLifecycleRuntime.afterConfigureWindow(window, false, false);
+
+        // Geometry should not be modified to Gravity.BOTTOM when keyboard surface is absent
+        Assert.assertEquals(originalGravity, window.getAttributes().gravity);
+        Assert.assertEquals(originalWidth, window.getAttributes().width);
+        Assert.assertEquals(originalHeight, window.getAttributes().height);
+    }
+
+    @Test
     public void clipboardContentLimitRuntimeFailsClosedDuringDirectBoot() {
         SharedPreferences clipPrefs = GboardClipboardContentLimitSettings.preferences(application);
         clipPrefs.edit()
@@ -137,6 +181,19 @@ public final class GboardFrostedGlassDirectBootTest {
     public static final class TestInputMethodService extends InputMethodService {
         private boolean throwWhenLocked;
         private AtomicInteger lockedSharedPreferencesCounter;
+        private Boolean customInputViewShown;
+
+        void setCustomInputViewShown(Boolean shown) {
+            this.customInputViewShown = shown;
+        }
+
+        @Override
+        public boolean isInputViewShown() {
+            if (customInputViewShown != null) {
+                return customInputViewShown;
+            }
+            return super.isInputViewShown();
+        }
 
         void setThrowOnSharedPreferencesWhenLocked(boolean throwWhenLocked,
                 AtomicInteger counter) {
