@@ -220,6 +220,31 @@ public final class GboardFrostedGlassDirectBootTest {
     }
 
     @Test
+    public void clipboardViewExcludedFromThemeSurfaceOpacity() {
+        android.widget.FrameLayout clipboardView = new android.widget.FrameLayout(application);
+        clipboardView.setTag("clipboard_body");
+        Assert.assertFalse(GboardFrostedGlassRuntime.isThemeSurfaceView(clipboardView));
+
+        android.widget.FrameLayout regularKeyboard = new android.widget.FrameLayout(application);
+        regularKeyboard.setTag(".keyboard-base-area");
+        Assert.assertTrue(GboardFrostedGlassRuntime.isThemeSurfaceView(regularKeyboard));
+    }
+
+    @Test
+    public void clipboardVisibilityDetectedCorrectly() {
+        android.widget.FrameLayout root = new android.widget.FrameLayout(application);
+        android.widget.FrameLayout child = new android.widget.FrameLayout(application);
+        child.setTag("clipboard_panel");
+        child.setVisibility(android.view.View.VISIBLE);
+        root.addView(child);
+
+        Assert.assertTrue(GboardFrostedGlassRuntime.isClipboardVisible(root));
+
+        root.removeView(child);
+        Assert.assertFalse(GboardFrostedGlassRuntime.isClipboardVisible(root));
+    }
+
+    @Test
     public void clipboardContentLimitRuntimeFailsClosedDuringDirectBoot() {
         SharedPreferences clipPrefs = GboardClipboardContentLimitSettings.preferences(application);
         clipPrefs.edit()

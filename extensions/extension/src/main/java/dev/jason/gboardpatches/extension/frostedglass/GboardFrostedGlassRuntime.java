@@ -198,7 +198,7 @@ public final class GboardFrostedGlassRuntime {
         }
         if (decor != null) {
             View root = findVisibleKeyboardRoot(decor);
-            if (root == null && isFloatingKeyboard(window)) {
+            if (root == null) {
                 return true;
             }
         }
@@ -268,16 +268,19 @@ public final class GboardFrostedGlassRuntime {
                 return;
             }
             View root = findVisibleKeyboardRoot(decor);
+            if (root == null) {
+                clearBlurEffects(window, state);
+                restoreKeyboardLayout(state);
+                restoreWindowGeometry(window, state);
+                return;
+            }
             boolean floating = isFloatingKeyboard(window, state);
             if (floating) {
                 restoreKeyboardLayout(state);
                 restoreWindowGeometry(window, state);
-            } else if (root != null) {
-                applyWindowGeometry(window, state);
-                constrainKeyboardSurface(decor, state, root);
             } else {
                 applyWindowGeometry(window, state);
-                restoreKeyboardLayout(state);
+                constrainKeyboardSurface(decor, state, root);
             }
             decor.postDelayed(() -> verifyAndApply(window, context, state), 32L);
         } catch (Throwable ignored) {
@@ -303,6 +306,12 @@ public final class GboardFrostedGlassRuntime {
                 return;
             }
             View root = findVisibleKeyboardRoot(decor);
+            if (root == null) {
+                clearBlurEffects(window, state);
+                restoreKeyboardLayout(state);
+                restoreWindowGeometry(window, state);
+                return;
+            }
             int radiusPx = GboardFrostedGlassSettingsRuntime.blurRadiusPx();
             int customOpacity = GboardFrostedGlassSettingsRuntime.customOpacityPercent();
             boolean floating = isFloatingKeyboard(window, state);
@@ -694,6 +703,9 @@ public final class GboardFrostedGlassRuntime {
         if (decor == null) {
             return null;
         }
+        if (isClipboardVisible(decor)) {
+            return null;
+        }
         View root = findVisibleViewWithTag(decor, KEYBOARD_ROOT_TAG);
         if (root == null) {
             root = findVisibleViewWithTag(decor, FLOATING_KEYBOARD_ROOT_TAG);
@@ -708,6 +720,28 @@ public final class GboardFrostedGlassRuntime {
             root = findVisibleViewWithTagContaining(decor, "cursor");
         }
         return (root != null && isUsableRoot(root)) ? root : null;
+    }
+
+    static boolean isClipboardVisible(View view) {
+        if (view == null || view.getVisibility() != View.VISIBLE) {
+            return false;
+        }
+        String className = view.getClass().getName();
+        if (className.contains("Clipboard")) {
+            return true;
+        }
+        Object tag = view.getTag();
+        if (tag instanceof String tagString && tagString.toLowerCase().contains("clipboard")) {
+            return true;
+        }
+        if (view instanceof ViewGroup group) {
+            for (int i = 0; i < group.getChildCount(); i++) {
+                if (isClipboardVisible(group.getChildAt(i))) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private static View findVisibleViewWithTagContaining(View view, String substring) {
@@ -780,6 +814,7 @@ public final class GboardFrostedGlassRuntime {
 
     private static boolean isThemeSurfaceTag(String tag) {
         if (tag == null) return false;
+        if (tag.toLowerCase().contains("clipboard")) return false;
         return tag.contains(".keyboard-base-area")
                 || tag.contains(".keyboard-header-area")
                 || tag.contains(".keyboard-body-area")
@@ -788,13 +823,21 @@ public final class GboardFrostedGlassRuntime {
                 || tag.contains("cursor");
     }
 
-    private static boolean isThemeSurfaceView(View view) {
+    static boolean isThemeSurfaceView(View view) {
         if (view == null) return false;
-        Object tag = view.getTag();
-        if (tag instanceof String tagString && isThemeSurfaceTag(tagString)) {
-            return true;
-        }
         String className = view.getClass().getName();
+        if (className.contains("Clipboard") || className.contains("CardView")) {
+            return false;
+        }
+        Object tag = view.getTag();
+        if (tag instanceof String tagString) {
+            if (tagString.toLowerCase().contains("clipboard")) {
+                return false;
+            }
+            if (isThemeSurfaceTag(tagString)) {
+                return true;
+            }
+        }
         return className.contains("SoftKeyboardView")
                 || className.contains("Trackpad")
                 || className.contains("Cursor");
