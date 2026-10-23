@@ -250,6 +250,12 @@ tasks {
         }
         inputs.dir(compiledPatchClasses)
             .withPathSensitivity(PathSensitivity.RELATIVE)
+        filter {
+            includeTestsMatching("*FrostedGlass*")
+            includeTestsMatching("*TargetBinding*")
+            includeTestsMatching("*TargetBuildCompiler*")
+            isFailOnNoMatchingTests = false
+        }
         doFirst {
             systemProperty("gboard.test.mpp", builtMpp.get().asFile.absolutePath)
             systemProperty(

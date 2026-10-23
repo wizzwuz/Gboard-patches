@@ -123,7 +123,7 @@ private fun gboardPublicResourcePatch(
 }
 
 @Suppress("unused")
-val gboardZhuyinSlideInputPatch = gboardPublicResourcePatch(
+internal val gboardZhuyinSlideInputPatch = gboardPublicResourcePatch(
     featureId = "zhuyin_slide_input",
     name = "Zhuyin Slide Input",
     description = "注音鍵盤支持上下滑輸入\nEnable slide-up and slide-down input on the Zhuyin keyboard.",
@@ -138,7 +138,7 @@ val gboardZhuyinSlideInputPatch = gboardPublicResourcePatch(
 }
 
 @Suppress("unused")
-val gboardEnglishQwertySlideUppercaseTogglePatch = gboardPublicResourcePatch(
+internal val gboardEnglishQwertySlideUppercaseTogglePatch = gboardPublicResourcePatch(
     featureId = "english_qwerty_up_flick_uppercase",
     name = "English QWERTY Up-Flick Uppercase",
     description = "英文 QWERTY 鍵盤上滑大小寫\nFlick up on the English QWERTY keyboard to toggle uppercase and lowercase.",
@@ -154,7 +154,7 @@ val gboardEnglishQwertySlideUppercaseTogglePatch = gboardPublicResourcePatch(
 }
 
 @Suppress("unused")
-val gboardLongPressQuickActionsPatch = gboardPublicResourcePatch(
+internal val gboardLongPressQuickActionsPatch = gboardPublicResourcePatch(
     featureId = "long_press_editing_shortcuts",
     name = "Long-Press Editing Shortcuts",
     description = "在英文 QWERTY 與注音鍵盤加入全選、復原、複製、剪下、貼上與重做長按快捷鍵\n" +
@@ -171,7 +171,7 @@ val gboardLongPressQuickActionsPatch = gboardPublicResourcePatch(
 }
 
 @Suppress("unused")
-val gboardSpacebarLogoPatch = gboardPublicResourcePatch(
+internal val gboardSpacebarLogoPatch = gboardPublicResourcePatch(
     featureId = "g_logo_on_spacebar",
     name = "G Logo on Spacebar",
     description = "在空白鍵顯示 G Logo，並隱藏語言名稱\n" +
@@ -187,7 +187,7 @@ val gboardSpacebarLogoPatch = gboardPublicResourcePatch(
 }
 
 @Suppress("unused")
-val gboardManualIncognitoModePatch = gboardPublicResourcePatch(
+internal val gboardManualIncognitoModePatch = gboardPublicResourcePatch(
     featureId = "incognito_mode_toggle",
     name = "Incognito Mode Toggle",
     description = "在 Access Point 工具列新增無痕模式切換按鈕，並可設定無痕模式下是否啟用剪貼簿與語音輸入\n" +
@@ -206,7 +206,7 @@ val gboardManualIncognitoModePatch = gboardPublicResourcePatch(
 }
 
 @Suppress("unused")
-val gboardEditingAccessPointsPatch = gboardPublicResourcePatch(
+internal val gboardEditingAccessPointsPatch = gboardPublicResourcePatch(
     featureId = "editing_access_points",
     name = "Toolbar Editing Buttons",
     description = "將全選、複製、剪下與貼上加入選單。\n" +
@@ -223,7 +223,7 @@ val gboardEditingAccessPointsPatch = gboardPublicResourcePatch(
 }
 
 @Suppress("unused")
-val gboardFloatingWebSearchPatch = gboardPublicResourcePatch(
+internal val gboardFloatingWebSearchPatch = gboardPublicResourcePatch(
     featureId = "floating_web_search",
     name = "Floating Web Search",
     description = "直接從 Gboard 開啟懸浮網頁，快速搜尋需要的資訊。\n" +
@@ -241,7 +241,7 @@ val gboardFloatingWebSearchPatch = gboardPublicResourcePatch(
 }
 
 @Suppress("unused")
-val gboardSimpleCalculatorPatch = gboardPublicResourcePatch(
+internal val gboardSimpleCalculatorPatch = gboardPublicResourcePatch(
     featureId = "simple_calculator",
     name = "Simple Calculator",
     description = "直接輸入算式，在 Gboard 推薦列顯示可捲動算式與答案。\n" +
@@ -258,7 +258,7 @@ val gboardSimpleCalculatorPatch = gboardPublicResourcePatch(
 }
 
 @Suppress("unused")
-val gboardSwipeDismissPatch = gboardPublicResourcePatch(
+internal val gboardSwipeDismissPatch = gboardPublicResourcePatch(
     featureId = "swipe_down_to_dismiss_keyboard",
     name = "Swipe Down to Dismiss Keyboard",
     description = "從建議列或工具列向下滑動以關閉鍵盤。\n" +
@@ -275,7 +275,7 @@ val gboardSwipeDismissPatch = gboardPublicResourcePatch(
 }
 
 @Suppress("unused")
-val gboardAdvancedVoiceTypingPatch = gboardPublicResourcePatch(
+internal val gboardAdvancedVoiceTypingPatch = gboardPublicResourcePatch(
     featureId = "advanced_voice_typing",
     name = "Advanced Voice Typing",
     description = "啟用進階語音輸入（包含自動標點功能），並另外為不支援進階語音輸入的繁體中文語音啟用自動標點\n" +
@@ -291,7 +291,7 @@ val gboardAdvancedVoiceTypingPatch = gboardPublicResourcePatch(
 }
 
 @Suppress("unused")
-val gboardBluetoothMicrophonePatch = gboardPublicResourcePatch(
+internal val gboardBluetoothMicrophonePatch = gboardPublicResourcePatch(
     featureId = "use_bluetooth_microphone",
     name = "Use Bluetooth Microphone",
     description = "啟用 語音輸入 -> 使用藍芽麥克風\n" +
@@ -308,7 +308,7 @@ val gboardBluetoothMicrophonePatch = gboardPublicResourcePatch(
 }
 
 @Suppress("unused")
-val gboardEmojiSizePatch = gboardPublicResourcePatch(
+internal val gboardEmojiSizePatch = gboardPublicResourcePatch(
     featureId = "change_emoji_size",
     name = "Change emoji size",
     description = "變更表情符號大小\nChange emoji size.",
@@ -324,7 +324,7 @@ val gboardEmojiSizePatch = gboardPublicResourcePatch(
 }
 
 @Suppress("unused")
-val gboardCursorTrackpadPatch = gboardPublicResourcePatch(
+internal val gboardCursorTrackpadPatch = gboardPublicResourcePatch(
     featureId = "enable_cursor_trackpad_mode",
     name = "Enable cursor trackpad mode",
     description = "長按空白鍵開啟游標觸控板與鎖定模式\n" +
@@ -341,7 +341,7 @@ val gboardCursorTrackpadPatch = gboardPublicResourcePatch(
 }
 
 @Suppress("unused")
-val gboardAccessPointsMenuStylePatch = gboardPublicResourcePatch(
+internal val gboardAccessPointsMenuStylePatch = gboardPublicResourcePatch(
     featureId = "access_points_menu_style",
     name = "Access Points menu style",
     description = "切換新版或舊版 Access Points 選單樣式\n" +
@@ -358,7 +358,7 @@ val gboardAccessPointsMenuStylePatch = gboardPublicResourcePatch(
 }
 
 @Suppress("unused")
-val gboardSplitKeyboardPatch = gboardPublicResourcePatch(
+internal val gboardSplitKeyboardPatch = gboardPublicResourcePatch(
     featureId = "enable_split_keyboard",
     name = "Enable split keyboard",
     description = "啟用分離式鍵盤\nEnable the split keyboard layout.",
@@ -375,7 +375,7 @@ val gboardSplitKeyboardPatch = gboardPublicResourcePatch(
 }
 
 @Suppress("unused")
-val gboardAccessibilityLayoutPatch = gboardPublicResourcePatch(
+internal val gboardAccessibilityLayoutPatch = gboardPublicResourcePatch(
     featureId = "enable_accessibility_layout",
     name = "Enable accessibility layout",
     description = "啟用無障礙鍵盤配置\nEnable accessibility layout.",
@@ -391,7 +391,7 @@ val gboardAccessibilityLayoutPatch = gboardPublicResourcePatch(
 }
 
 @Suppress("unused")
-val gboardRoundedKeyboardPanelPatch = gboardPublicResourcePatch(
+internal val gboardRoundedKeyboardPanelPatch = gboardPublicResourcePatch(
     featureId = "rounded_keyboard_panel",
     name = "Rounded Keyboard Panel",
     description = "自訂鍵盤面板哪些角落呈現圓角，並分別設定上方與下方半徑。\n" +
@@ -424,7 +424,7 @@ val gboardFrostedGlassPatch = gboardPublicResourcePatch(
 }
 
 @Suppress("unused")
-val gboardAccessPointCountPatch = gboardPublicResourcePatch(
+internal val gboardAccessPointCountPatch = gboardPublicResourcePatch(
     featureId = "access_point_count",
     name = "Top Toolbar Item Count",
     description = "自訂 Gboard 頂端工具列項目數量\n" +
@@ -441,7 +441,7 @@ val gboardAccessPointCountPatch = gboardPublicResourcePatch(
 }
 
 @Suppress("unused")
-val gboardCloseProactiveSuggestionsPatch = gboardPublicResourcePatch(
+internal val gboardCloseProactiveSuggestionsPatch = gboardPublicResourcePatch(
     featureId = "close_proactive_suggestions",
     name = "Close Proactive Suggestions",
     description = "在主動建議列顯示關閉按鈕\n" +
@@ -458,7 +458,7 @@ val gboardCloseProactiveSuggestionsPatch = gboardPublicResourcePatch(
 }
 
 @Suppress("unused")
-val gboardFlowModeAnimationPatch = gboardPublicResourcePatch(
+internal val gboardFlowModeAnimationPatch = gboardPublicResourcePatch(
     featureId = "flow_mode_animation",
     name = "Hyperspeed Typing Animation",
     description = "持續快速輸入時顯示動畫，並支援所有鍵盤\n" +
@@ -474,7 +474,7 @@ val gboardFlowModeAnimationPatch = gboardPublicResourcePatch(
 }
 
 @Suppress("unused")
-val gboardCustomThemePatch = gboardPublicResourcePatch(
+internal val gboardCustomThemePatch = gboardPublicResourcePatch(
     featureId = "custom_theme",
     name = "Custom Theme",
     description = "支援匯入自訂 ZIP 主題，並支援從 Rboard 官方儲存庫匯入精美主題。\n" +
@@ -492,7 +492,7 @@ val gboardCustomThemePatch = gboardPublicResourcePatch(
 }
 
 @Suppress("unused")
-val gboardQuickInsertPatch = gboardPublicResourcePatch(
+internal val gboardQuickInsertPatch = gboardPublicResourcePatch(
     featureId = "quick_insert",
     name = "Quick Insert",
     description = "啟用快速插入面板與工具列入口\n" +
@@ -509,7 +509,7 @@ val gboardQuickInsertPatch = gboardPublicResourcePatch(
 }
 
 @Suppress("unused")
-val gboardZhuyinQuickTraditionalSimplifiedTogglePatch = gboardPublicResourcePatch(
+internal val gboardZhuyinQuickTraditionalSimplifiedTogglePatch = gboardPublicResourcePatch(
     featureId = "zhuyin_quick_traditional_simplified_toggle",
     name = "Zhuyin Quick Traditional/Simplified Toggle",
     description = "注音 ㄥ 上滑快速切換繁簡\nSwipe up on Zhuyin ㄥ to quickly toggle Traditional and Simplified Chinese.",
@@ -523,7 +523,7 @@ val gboardZhuyinQuickTraditionalSimplifiedTogglePatch = gboardPublicResourcePatc
 }
 
 @Suppress("unused")
-val gboardCustomSymbolsPatch = gboardPublicResourcePatch(
+internal val gboardCustomSymbolsPatch = gboardPublicResourcePatch(
     featureId = "custom_symbols",
     name = "Custom Symbols",
     description = "新增獨立的特殊符號分頁，長按逗號->愛心\nAdd a dedicated custom symbols tab and replace the long-press comma entry with a heart shortcut.",
@@ -538,7 +538,7 @@ val gboardCustomSymbolsPatch = gboardPublicResourcePatch(
 }
 
 @Suppress("unused")
-val gboardCustomTopRowSwipePatch = gboardPublicResourcePatch(
+internal val gboardCustomTopRowSwipePatch = gboardPublicResourcePatch(
     featureId = "swipeable_custom_top_row",
     name = "Swipeable Custom Top Row",
     description = "滑動鍵盤第一排，在原生列與可自訂文字/JavaScript 列之間切換\nSwipe the keyboard top row to switch between the stock row and a customizable text/JavaScript row.",
@@ -553,7 +553,7 @@ val gboardCustomTopRowSwipePatch = gboardPublicResourcePatch(
 }
 
 @Suppress("unused")
-val gboardDeveloperOptionsPatch = gboardPublicResourcePatch(
+internal val gboardDeveloperOptionsPatch = gboardPublicResourcePatch(
     featureId = "developer_options",
     name = "Developer options",
     description = "啟用 開發人員選項 與 Flag 編輯器，你可以自己修改Flag的值\nEnable Developer options and the Flag Editor, allowing you to modify flag values.",
@@ -568,7 +568,7 @@ val gboardDeveloperOptionsPatch = gboardPublicResourcePatch(
 }
 
 @Suppress("unused")
-val gboardBackupRestorePatch = gboardPublicResourcePatch(
+internal val gboardBackupRestorePatch = gboardPublicResourcePatch(
     featureId = "backup_restore",
     name = "Backup & Restore",
     description = "匯出或還原全部 Patches 設定，並備份、比較及還原 Gboard PB/XML flag store\n" +
@@ -585,7 +585,7 @@ val gboardBackupRestorePatch = gboardPublicResourcePatch(
 }
 
 @Suppress("unused")
-val gboardSymbolsFooterOrderPatch = gboardPublicResourcePatch(
+internal val gboardSymbolsFooterOrderPatch = gboardPublicResourcePatch(
     featureId = "emojis_stickers_gifs_tab_order",
     name = "Emojis, stickers & GIFs Tab Order",
     description = "自訂 Gboard「Emojis, stickers & GIFs」底部 tabs 的排序，支援拖曳調整\nCustomize the bottom tab order in Gboard's Emojis, stickers & GIFs panel with drag-and-drop reordering.",
@@ -601,7 +601,7 @@ val gboardSymbolsFooterOrderPatch = gboardPublicResourcePatch(
 }
 
 @Suppress("unused")
-val gboardClipboardEnhancementsPatch = gboardPublicResourcePatch(
+internal val gboardClipboardEnhancementsPatch = gboardPublicResourcePatch(
     featureId = "clipboard_enhancements",
     name = "Clipboard Enhancements",
     description = "增強剪貼簿的保留時間、數量上限、預覽行數、倒數/建立時間、順序編號與欄數\nEnhance clipboard retention time, item count limit, preview lines, countdown/creation time labels, order index, and column count.",
@@ -622,7 +622,7 @@ val gboardClipboardEnhancementsPatch = gboardPublicResourcePatch(
 }
 
 @Suppress("unused")
-val gboardClipboardContentLimitPatch = gboardPublicResourcePatch(
+internal val gboardClipboardContentLimitPatch = gboardPublicResourcePatch(
     featureId = "clipboard_custom_character_limit",
     name = "Clipboard Custom Character Limit",
     description = "自訂每個文字剪貼簿項目的最大字元數\nCustomize the maximum character count for each text clipboard item.",
@@ -638,7 +638,7 @@ val gboardClipboardContentLimitPatch = gboardPublicResourcePatch(
 }
 
 @Suppress("unused")
-val gboardWebClipboardPatch = gboardPublicResourcePatch(
+internal val gboardWebClipboardPatch = gboardPublicResourcePatch(
     featureId = "web_clipboard",
     name = "Web Clipboard",
     description = "新增手機自架的 Web Clipboard，支援瀏覽器同步、配對碼與快速設定開關\nAdd the phone-hosted Web Clipboard with browser sync, pairing, and a Quick Settings Tile.",
@@ -656,7 +656,7 @@ val gboardWebClipboardPatch = gboardPublicResourcePatch(
 }
 
 @Suppress("unused")
-val gboardLanFtpServerPatch = gboardPublicResourcePatch(
+internal val gboardLanFtpServerPatch = gboardPublicResourcePatch(
     featureId = "lan_ftp_server",
     name = "FTP Server",
     description = "新增區域網路 FTP 伺服器，支援檔案瀏覽、傳輸與下載續傳\n" +
@@ -673,7 +673,7 @@ val gboardLanFtpServerPatch = gboardPublicResourcePatch(
 }
 
 @Suppress("unused")
-val gboardDeviceIntelligencePatch = gboardPublicResourcePatch(
+internal val gboardDeviceIntelligencePatch = gboardPublicResourcePatch(
     featureId = "enable_inline_autofill_suggestions",
     name = "Enable Inline Autofill Suggestions",
     description = "啟用內嵌自動填入建議\nEnable Inline Autofill Suggestions",
@@ -689,7 +689,7 @@ val gboardDeviceIntelligencePatch = gboardPublicResourcePatch(
 }
 
 @Suppress("unused")
-val gboardGrammarCheckerFlagPatch = gboardPublicResourcePatch(
+internal val gboardGrammarCheckerFlagPatch = gboardPublicResourcePatch(
     featureId = "grammar_checker",
     name = "Grammar Checker",
     description = "啟用 修正和建議 > 文法檢查\nEnable Text correction > Grammar check.",
@@ -705,7 +705,7 @@ val gboardGrammarCheckerFlagPatch = gboardPublicResourcePatch(
 }
 
 @Suppress("unused")
-val gboardInlineSuggestionsFlagPatch = gboardPublicResourcePatch(
+internal val gboardInlineSuggestionsFlagPatch = gboardPublicResourcePatch(
     featureId = "inline_suggestions",
     name = "Inline Suggestions",
     description = "啟用 修正和建議 > 智慧撰寫\nEnable Text correction > Smart Compose.",
@@ -721,7 +721,7 @@ val gboardInlineSuggestionsFlagPatch = gboardPublicResourcePatch(
 }
 
 @Suppress("unused")
-val gboardKeyShapeSelectionFlagPatch = gboardPublicResourcePatch(
+internal val gboardKeyShapeSelectionFlagPatch = gboardPublicResourcePatch(
     featureId = "key_shape_selection",
     name = "Key Shape Selection",
     description = "啟用圓角按鍵，主題詳情 > 按鍵形狀\nEnable Key shape in Theme details.",
@@ -737,7 +737,7 @@ val gboardKeyShapeSelectionFlagPatch = gboardPublicResourcePatch(
 }
 
 @Suppress("unused")
-val gboardAiWritingToolsPatch = gboardPublicResourcePatch(
+internal val gboardAiWritingToolsPatch = gboardPublicResourcePatch(
     featureId = "ai_writing_tools",
     name = "AI Writing Tools",
     description = "啟用 AI 撰寫工具，支援所有語言\nEnable AI writing tools with support for all languages.",
@@ -758,7 +758,7 @@ val gboardAiWritingToolsPatch = gboardPublicResourcePatch(
 }
 
 @Suppress("unused")
-val gboardOcrScanTextPatch = gboardPublicResourcePatch(
+internal val gboardOcrScanTextPatch = gboardPublicResourcePatch(
     featureId = "enable_ocr_scan_text",
     name = "Enable OCR / Scan Text",
     description = "啟用 OCR / 掃描文字功能，支援 拉丁、中文、日文、韓文 與 天城文 辨識後端\n" +
@@ -774,7 +774,7 @@ val gboardOcrScanTextPatch = gboardPublicResourcePatch(
 }
 
 @Suppress("unused")
-val gboardSettingsHomepagePatch = gboardPublicResourcePatch(
+internal val gboardSettingsHomepagePatch = gboardPublicResourcePatch(
     featureId = "settings_homepage_override",
     name = "Settings Homepage Override",
     description = "允許切換新版或舊版 Gboard 設定頁面\nAllow switching between the new and legacy Gboard settings pages.",
@@ -790,7 +790,7 @@ val gboardSettingsHomepagePatch = gboardPublicResourcePatch(
 }
 
 @Suppress("unused")
-val gboardLatinGlobeKeyIgnoreIntervalPatch = gboardPublicResourcePatch(
+internal val gboardLatinGlobeKeyIgnoreIntervalPatch = gboardPublicResourcePatch(
     featureId = "latin_globe_key_ignore_interval",
     name = "Latin Globe Key Ignore Interval",
     description = "新增英文鍵盤地球鍵忽略時間覆寫，可獨立控制輸入後切語言延遲\nAdd an independent English globe key ignore interval override for post-typing language-switch delay.",
@@ -806,7 +806,7 @@ val gboardLatinGlobeKeyIgnoreIntervalPatch = gboardPublicResourcePatch(
 }
 
 @Suppress("unused")
-val gboardZhuyinBottomRowWeightPatch = gboardPublicResourcePatch(
+internal val gboardZhuyinBottomRowWeightPatch = gboardPublicResourcePatch(
     featureId = "zhuyin_bottom_row_key_sizes",
     name = "Zhuyin Bottom Row Key Sizes",
     description = "調整注音鍵盤底排按鍵大小\nAdjust Zhuyin keyboard bottom-row key sizes.",
@@ -822,7 +822,7 @@ val gboardZhuyinBottomRowWeightPatch = gboardPublicResourcePatch(
 }
 
 @Suppress("unused")
-val gboardPackageRenamePatch = gboardPublicResourcePatch(
+internal val gboardPackageRenamePatch = gboardPublicResourcePatch(
     featureId = "package_rename",
     name = "Package Rename",
     description = "將套件名稱改成 dev.jason.com.google.android.inputmethod.latin，並可自訂 App 名稱，以便共存安裝\n" +
@@ -864,7 +864,7 @@ val gboardPackageRenamePatch = gboardPublicResourcePatch(
 }
 
 @Suppress("unused")
-val gboardSignatureBypassPatch = gboardPublicResourcePatch(
+internal val gboardSignatureBypassPatch = gboardPublicResourcePatch(
     featureId = "add_gboard_signature_bypass",
     name = "Add Gboard Signature Bypass",
     description = "攔截 Gboard 的簽章白名單檢查並強制通過\nBypass Gboard signature whitelist checks and force them to pass.",
@@ -879,50 +879,7 @@ val gboardSignatureBypassPatch = gboardPublicResourcePatch(
 
 object GboardPublishedPatchCatalog {
     val morpheRegistrations: Set<Patch<*>> = linkedSetOf(
-        gboardZhuyinSlideInputPatch,
-        gboardEnglishQwertySlideUppercaseTogglePatch,
-        gboardLongPressQuickActionsPatch,
-        gboardSpacebarLogoPatch,
-        gboardManualIncognitoModePatch,
-        gboardFloatingWebSearchPatch,
-        gboardEditingAccessPointsPatch,
-        gboardSimpleCalculatorPatch,
-        gboardSwipeDismissPatch,
-        gboardAdvancedVoiceTypingPatch,
-        gboardBluetoothMicrophonePatch,
-        gboardEmojiSizePatch,
-        gboardCursorTrackpadPatch,
-        gboardAccessPointsMenuStylePatch,
-        gboardSplitKeyboardPatch,
-        gboardAccessibilityLayoutPatch,
-        gboardRoundedKeyboardPanelPatch,
         gboardFrostedGlassPatch,
-        gboardAccessPointCountPatch,
-        gboardCloseProactiveSuggestionsPatch,
-        gboardFlowModeAnimationPatch,
-        gboardCustomThemePatch,
-        gboardQuickInsertPatch,
-        gboardZhuyinQuickTraditionalSimplifiedTogglePatch,
-        gboardCustomSymbolsPatch,
-        gboardCustomTopRowSwipePatch,
-        gboardBackupRestorePatch,
-        gboardDeveloperOptionsPatch,
-        gboardSymbolsFooterOrderPatch,
-        gboardClipboardEnhancementsPatch,
-        gboardClipboardContentLimitPatch,
-        gboardWebClipboardPatch,
-        gboardLanFtpServerPatch,
-        gboardDeviceIntelligencePatch,
-        gboardGrammarCheckerFlagPatch,
-        gboardInlineSuggestionsFlagPatch,
-        gboardKeyShapeSelectionFlagPatch,
-        gboardAiWritingToolsPatch,
-        gboardOcrScanTextPatch,
-        gboardSettingsHomepagePatch,
-        gboardLatinGlobeKeyIgnoreIntervalPatch,
-        gboardZhuyinBottomRowWeightPatch,
-        gboardPackageRenamePatch,
-        gboardSignatureBypassPatch,
     ).filterTo(linkedSetOf()) { patch -> patch.name != null }
 
     @Suppress("DEPRECATION")
