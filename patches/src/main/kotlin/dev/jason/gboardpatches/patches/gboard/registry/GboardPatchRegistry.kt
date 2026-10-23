@@ -110,8 +110,9 @@ private fun gboardPublicResourcePatch(
     default: Boolean,
     block: ResourcePatchBuilder.() -> Unit,
 ) = GboardTargetAdmission.admittedContributions(featureId).let { admitted ->
+    val isPublished = featureId == "frosted_glass" && admitted.isNotEmpty()
     resourcePatch(
-        name = name.takeIf { admitted.isNotEmpty() },
+        name = name.takeIf { isPublished },
         description = description,
         default = default,
     ) {

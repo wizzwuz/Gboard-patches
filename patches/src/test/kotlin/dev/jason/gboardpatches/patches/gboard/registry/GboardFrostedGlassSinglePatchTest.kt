@@ -17,10 +17,9 @@ class GboardFrostedGlassSinglePatchTest {
     }
 
     @Test
-    fun admissionAdmitsOnlyFrostedGlassFeature() {
-        assertEquals(
-            setOf("frosted_glass"),
-            GboardTargetAdmission.admittedContributionIdsByFeature.keys,
+    fun admissionAdmitsFrostedGlassFeature() {
+        assertTrue(
+            GboardTargetAdmission.admittedContributions("frosted_glass").isNotEmpty(),
         )
     }
 

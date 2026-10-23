@@ -40,7 +40,123 @@ internal class GboardContributionWiringUnit(
 }
 
 internal object GboardContributionWiring {
-    private val unitsByFeature = emptyMap<String, List<GboardContributionWiringUnit>>()
+    private val unitsByFeature = mapOf(
+        "advanced_voice_typing" to listOf(
+            unit("advanced_voice_typing.flag") {
+                arrayOf(gboardAdvancedVoiceFlagValuePatch)
+            },
+            unit("advanced_voice_typing.bytecode") {
+                arrayOf(
+                    gboardAdvancedVoice1803ZhTwPatch,
+                    gboardRambler1803OfficialSelectorPatch,
+                )
+            },
+        ),
+        "custom_symbols" to listOf(
+            unit("custom_symbols.soft_key") {
+                arrayOf(gboardZhuyinCustomSymbolsEntryPatch)
+            },
+            unit("custom_symbols.bytecode") {
+                arrayOf(
+                    gboardZhuyinCustomSymbolsCorpusPatch,
+                    gboardZhuyinCustomSymbolsRoutingPatch,
+                    gboardZhuyinCustomSymbolsEmoticonStatePatch,
+                    gboardZhuyinCustomSymbolsHistoryPatch,
+                    gboardZhuyinCustomSymbolsRecyclerPatch,
+                )
+            },
+        ),
+        "enable_ocr_scan_text" to listOf(
+            unit("enable_ocr_scan_text.flag") {
+                arrayOf(gboardOcrFlagValuePatch)
+            },
+            unit("enable_ocr_scan_text.bytecode") {
+                arrayOf(gboardOcrRuntimePatch)
+            },
+        ),
+        "english_qwerty_up_flick_uppercase" to listOf(
+            unit("english_qwerty_up_flick_uppercase.soft_key") {
+                arrayOf(gboardEnglishQwertySoftKeyPatch)
+            },
+            unit("english_qwerty_up_flick_uppercase.pointer") {
+                arrayOf(gboardEnglishQwertyPointerPatch)
+            },
+        ),
+        "flow_mode_animation" to listOf(
+            unit("flow_mode_animation.flag") {
+                arrayOf(gboardFlowModeFlagValuePatch)
+            },
+            unit("flow_mode_animation.key_event") {
+                arrayOf(gboardFlowModeKeyEventPatch)
+            },
+        ),
+        "g_logo_on_spacebar" to listOf(
+            unit(
+                "g_logo_on_spacebar.before_bind",
+                "g_logo_on_spacebar.after_bind",
+            ) {
+                arrayOf(gboardSpacebarLogoSoftKeyPatch)
+            },
+        ),
+        "long_press_editing_shortcuts" to listOf(
+            unit("long_press_editing_shortcuts.soft_key") {
+                arrayOf(gboardLongPressQuickActionsSoftKeyPatch)
+            },
+            unit("long_press_editing_shortcuts.input_event") {
+                arrayOf(gboardLongPressQuickActionsInputEventPatch)
+            },
+            unit("long_press_editing_shortcuts.pointer") {
+                arrayOf(gboardLongPressQuickActionsPointerOwnerPatch)
+            },
+            unit("long_press_editing_shortcuts.gesture") {
+                arrayOf(gboardLongPressQuickActionsGesturePatch)
+            },
+        ),
+        "rounded_keyboard_panel" to listOf(
+            unit(
+                "rounded_keyboard_panel.admission",
+                "rounded_keyboard_panel.style",
+            ) {
+                arrayOf(gboardRoundedKeyboardBytecodePatch)
+            },
+        ),
+        "swipeable_custom_top_row" to listOf(
+            unit(
+                "swipeable_custom_top_row.soft_key",
+                "swipeable_custom_top_row.soft_key_after",
+            ) {
+                arrayOf(gboardTopRowSwipeSoftKeyPatch)
+            },
+            unit("swipeable_custom_top_row.pointer") {
+                arrayOf(gboardTopRowSwipePointerPatch)
+            },
+            unit("swipeable_custom_top_row.gesture") {
+                arrayOf(gboardTopRowSwipeGesturePatch)
+            },
+        ),
+        "zhuyin_quick_traditional_simplified_toggle" to listOf(
+            unit("zhuyin_quick_traditional_simplified_toggle.gesture") {
+                arrayOf(gboardZhuyinTraditionalSimplifiedToggleGesturePatch)
+            },
+            unit(
+                "zhuyin_quick_traditional_simplified_toggle.soft_key",
+                "zhuyin_quick_traditional_simplified_toggle.soft_key_after",
+            ) {
+                arrayOf(gboardZhuyinTraditionalSimplifiedToggleSoftKeyPatch)
+            },
+            unit("zhuyin_quick_traditional_simplified_toggle.popup") {
+                arrayOf(gboardZhuyinTraditionalSimplifiedTogglePopupPatch)
+            },
+        ),
+        "zhuyin_slide_input" to listOf(
+            unit("zhuyin_slide_input.soft_key") {
+                arrayOf(gboardZhuyinSlideSoftKeyPatch)
+            },
+            unit("zhuyin_slide_input.pointer") {
+                arrayOf(gboardZhuyinSlidePointerAnchorPatch)
+            },
+        ),
+    )
 
     val registeredContributionIdsByFeature: Map<String, Set<String>> =
         unitsByFeature.mapValues { (_, units) ->

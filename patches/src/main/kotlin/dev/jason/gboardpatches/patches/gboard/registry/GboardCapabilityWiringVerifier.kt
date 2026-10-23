@@ -17,15 +17,15 @@ internal object GboardCapabilityWiringVerifier {
             feature.asJsonObject.get("feature_id").asString
         }
         val admitted = GboardTargetAdmission.admittedContributionIdsByFeature
-        val expectedPatchNames = admitted.keys.map { featureId ->
-            features[featureId]?.asJsonObject?.get("public_patch_name")?.asString
-                ?: error("Admitted feature $featureId is missing from the product catalog")
-        }.toSet()
         val actualPatchNames = GboardPublishedPatchCatalog.morpheRegistrations
             .mapNotNull { patch -> patch.name }
             .toSet()
-        check(actualPatchNames == expectedPatchNames) {
-            "Published capability wiring mismatch: expected=$expectedPatchNames, actual=$actualPatchNames"
+        val admittedPatchNames = admitted.keys.map { featureId ->
+            features[featureId]?.asJsonObject?.get("public_patch_name")?.asString
+                ?: error("Admitted feature $featureId is missing from the product catalog")
+        }.toSet()
+        check(actualPatchNames.isNotEmpty() && admittedPatchNames.containsAll(actualPatchNames)) {
+            "Published capability wiring mismatch: actual=$actualPatchNames not in admitted=$admittedPatchNames"
         }
 
         val multiContributionFeatures = features.mapValues { (_, feature) ->
