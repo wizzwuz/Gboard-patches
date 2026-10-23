@@ -677,7 +677,6 @@ class GboardPortProductCatalogContractTest {
             "flow_mode_animation" to "version-sensitive",
             "floating_web_search" to "version-sensitive",
             "frosted_glass" to "version-sensitive",
-            "frosted_glass_stylus_compat" to "version-sensitive",
             "g_logo_on_spacebar" to "version-sensitive",
             "grammar_checker" to "version-sensitive",
             "incognito_mode_toggle" to "version-sensitive",

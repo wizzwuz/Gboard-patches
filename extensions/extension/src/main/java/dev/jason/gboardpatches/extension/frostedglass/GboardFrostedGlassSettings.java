@@ -3,7 +3,6 @@ package dev.jason.gboardpatches.extension.frostedglass;
 import android.content.Context;
 import android.content.SharedPreferences;
 
-import dev.jason.gboardpatches.extension.settings.GboardPatchesFeatureAvailability;
 import dev.jason.gboardpatches.extension.settings.GboardPatchesSettings;
 
 /** Settings owned by the module; the theme ZIP remains the source of palette and alpha. */
@@ -57,8 +56,7 @@ public final class GboardFrostedGlassSettings {
         if (preferences != null && preferences.contains(PREF_KEY_STYLUS_COMPAT)) {
             return readStylusCompat(preferences);
         }
-        return GboardPatchesFeatureAvailability.hasFeature(
-                context, GboardPatchesFeatureAvailability.FEATURE_FROSTED_GLASS_STYLUS_COMPAT);
+        return DEFAULT_STYLUS_COMPAT;
     }
 
     public static boolean readStylusCompat(SharedPreferences preferences) {

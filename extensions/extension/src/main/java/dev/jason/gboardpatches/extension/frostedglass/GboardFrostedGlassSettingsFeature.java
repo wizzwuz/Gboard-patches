@@ -105,18 +105,15 @@ public final class GboardFrostedGlassSettingsFeature
                         GboardPatchesSettingsContract.refresh(host);
                         requestRestart(host);
                     }));
-            if (GboardPatchesFeatureAvailability.hasFeature(
-                    context, GboardPatchesFeatureAvailability.FEATURE_FROSTED_GLASS_STYLUS_COMPAT)) {
-                boolean stylusCompat = GboardFrostedGlassSettings.readStylusCompat(context);
-                rows.add(new GboardPatchesSettingsContract.ToggleRow(
-                        stylusCompatTitle, stylusCompatSummary, enabled, stylusCompat, value -> {
-                            if (!GboardFrostedGlassSettings.writeStylusCompat(context, value)) {
-                                Log.w(TAG, "Failed to persist stylus compat state");
-                            }
-                            GboardPatchesSettingsContract.refresh(host);
-                            requestRestart(host);
-                        }));
-            }
+            boolean stylusCompat = GboardFrostedGlassSettings.readStylusCompat(context);
+            rows.add(new GboardPatchesSettingsContract.ToggleRow(
+                    stylusCompatTitle, stylusCompatSummary, enabled, stylusCompat, value -> {
+                        if (!GboardFrostedGlassSettings.writeStylusCompat(context, value)) {
+                            Log.w(TAG, "Failed to persist stylus compat state");
+                        }
+                        GboardPatchesSettingsContract.refresh(host);
+                        requestRestart(host);
+                    }));
             rows.add(new GboardPatchesSettingsContract.SelectorRow(
                     radiusTitle, radiusSummary, Integer.toString(strength), enabled,
                     () -> GboardPatchesSettingsContract.showPositiveIntegerDialog(host,

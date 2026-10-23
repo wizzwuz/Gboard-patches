@@ -60,8 +60,7 @@ public final class GboardFrostedGlassRuntime {
                 return;
             }
             if (!GboardFrostedGlassSettingsRuntime.isEnabled()
-                    || fullscreen || candidatesOnly || !canUseBackgroundBlur(service)
-                    || shouldSkipForStylus(service, window, window.getDecorView())) {
+                    || fullscreen || candidatesOnly) {
                 disable(window);
                 return;
             }
@@ -84,9 +83,7 @@ public final class GboardFrostedGlassRuntime {
                 return;
             }
             if (!GboardFrostedGlassSettingsRuntime.isEnabled()
-                    || fullscreen || candidatesOnly || context == null
-                    || !canUseBackgroundBlur(context)
-                    || shouldSkipForStylus(context, window, window.getDecorView())) {
+                    || fullscreen || candidatesOnly || context == null) {
                 disable(window);
                 return;
             }
@@ -110,8 +107,7 @@ public final class GboardFrostedGlassRuntime {
             if (window == null) {
                 return;
             }
-            if (!GboardFrostedGlassSettingsRuntime.isEnabled()
-                    || shouldSkipForStylus(service, window, window.getDecorView())) {
+            if (!GboardFrostedGlassSettingsRuntime.isEnabled()) {
                 disable(window);
                 return;
             }
@@ -123,9 +119,7 @@ public final class GboardFrostedGlassRuntime {
                 decor.post(() -> {
                     try {
                         if (isUserUnlocked(service)
-                                && GboardFrostedGlassSettingsRuntime.isEnabled()
-                                && canUseBackgroundBlur(service)
-                                && !shouldSkipForStylus(service, window, decor)) {
+                                && GboardFrostedGlassSettingsRuntime.isEnabled()) {
                             scheduleApply(window, service);
                         } else {
                             disable(window);
@@ -185,22 +179,23 @@ public final class GboardFrostedGlassRuntime {
         return true;
     }
 
-    private static boolean shouldSkipForStylus(Context context) {
+    static boolean shouldSkipForStylus(Context context) {
         return shouldSkipForStylus(context, null, null);
     }
 
-    private static boolean shouldSkipForStylus(Context context, Window window, View decor) {
+    static boolean shouldSkipForStylus(Context context, Window window, View decor) {
         if (!GboardFrostedGlassSettingsRuntime.isStylusCompatEnabled(context)) {
             return false;
         }
-        if (!isInputViewShown(context)) {
-            return true;
-        }
         if (decor != null) {
             View root = findVisibleKeyboardRoot(decor);
-            if (root == null) {
-                return true;
+            if (root != null) {
+                return false;
             }
+            return true;
+        }
+        if (!isInputViewShown(context)) {
+            return true;
         }
         return false;
     }
@@ -221,23 +216,55 @@ public final class GboardFrostedGlassRuntime {
 
     private static void installDecorLayoutObserver(Window window,
             Context context, View decor, State state) {
-        if (state.decorLayoutObserverInstalled) {
-            return;
+        if (!state.decorLayoutObserverInstalled) {
+            View.OnLayoutChangeListener listener = (view, left, top, right, bottom,
+                    oldLeft, oldTop, oldRight, oldBottom) -> {
+                if (left == oldLeft && top == oldTop && right == oldRight && bottom == oldBottom) {
+                    return;
+                }
+                if (!isUserUnlocked(context) || !GboardFrostedGlassSettingsRuntime.isEnabled()) {
+                    return;
+                }
+                long generation = ++state.layoutGeneration;
+                view.postDelayed(() -> reapplyAfterLayout(window, context, state, generation), 32L);
+            };
+            decor.addOnLayoutChangeListener(listener);
+            state.decorLayoutObserver = listener;
+            try {
+                android.view.ViewTreeObserver vto = decor.getViewTreeObserver();
+                if (vto != null && vto.isAlive()) {
+                    android.view.ViewTreeObserver.OnGlobalLayoutListener globalListener = () -> {
+                        if (!isUserUnlocked(context) || !GboardFrostedGlassSettingsRuntime.isEnabled()) {
+                            return;
+                        }
+                        long generation = ++state.layoutGeneration;
+                        decor.postDelayed(() -> reapplyAfterLayout(window, context, state, generation), 32L);
+                    };
+                    vto.addOnGlobalLayoutListener(globalListener);
+                    state.globalLayoutObserver = globalListener;
+                }
+            } catch (Throwable ignored) {
+            }
+            state.decorLayoutObserverInstalled = true;
         }
-        View.OnLayoutChangeListener listener = (view, left, top, right, bottom,
-                oldLeft, oldTop, oldRight, oldBottom) -> {
-            if (left == oldLeft && top == oldTop && right == oldRight && bottom == oldBottom) {
-                return;
-            }
-            if (!isUserUnlocked(context) || !GboardFrostedGlassSettingsRuntime.isEnabled()) {
-                return;
-            }
-            long generation = ++state.layoutGeneration;
-            view.postDelayed(() -> reapplyAfterLayout(window, context, state, generation), 32L);
-        };
-        decor.addOnLayoutChangeListener(listener);
-        state.decorLayoutObserverInstalled = true;
-        state.decorLayoutObserver = listener;
+
+        View inputArea = decor.findViewById(android.R.id.inputArea);
+        if (inputArea != null && inputArea != decor && state.inputAreaObserver == null) {
+            View.OnLayoutChangeListener inputListener = (view, left, top, right, bottom,
+                    oldLeft, oldTop, oldRight, oldBottom) -> {
+                if (left == oldLeft && top == oldTop && right == oldRight && bottom == oldBottom) {
+                    return;
+                }
+                if (!isUserUnlocked(context) || !GboardFrostedGlassSettingsRuntime.isEnabled()) {
+                    return;
+                }
+                long generation = ++state.layoutGeneration;
+                view.postDelayed(() -> reapplyAfterLayout(window, context, state, generation), 32L);
+            };
+            inputArea.addOnLayoutChangeListener(inputListener);
+            state.inputAreaObserver = inputListener;
+            state.observedInputArea = new WeakReference<>(inputArea);
+        }
     }
 
     private static boolean canUseBackgroundBlur(Context context) {
@@ -316,6 +343,13 @@ public final class GboardFrostedGlassRuntime {
             int customOpacity = GboardFrostedGlassSettingsRuntime.customOpacityPercent();
             boolean floating = isFloatingKeyboard(window, state);
             if (floating) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && state.windowBlurApplied) {
+                    try {
+                        window.setBackgroundBlurRadius(0);
+                    } catch (Throwable ignored) {
+                    }
+                    state.windowBlurApplied = false;
+                }
                 if (!state.windowBackgroundChanged) {
                     state.originalWindowBackground = decor.getBackground();
                     window.setBackgroundDrawable(transparentRoundedBackground(context));
@@ -881,8 +915,31 @@ public final class GboardFrostedGlassRuntime {
         if (state == null) return;
         if (state.decorLayoutObserverInstalled) {
             View decor = window.getDecorView();
-            if (decor != null) decor.removeOnLayoutChangeListener(state.decorLayoutObserver);
+            if (decor != null) {
+                if (state.decorLayoutObserver != null) {
+                    decor.removeOnLayoutChangeListener(state.decorLayoutObserver);
+                }
+                if (state.globalLayoutObserver != null) {
+                    try {
+                        android.view.ViewTreeObserver vto = decor.getViewTreeObserver();
+                        if (vto != null && vto.isAlive()) {
+                            vto.removeOnGlobalLayoutListener(state.globalLayoutObserver);
+                        }
+                    } catch (Throwable ignored) {
+                    }
+                }
+            }
+            if (state.observedInputArea != null) {
+                View inputArea = state.observedInputArea.get();
+                if (inputArea != null && state.inputAreaObserver != null) {
+                    inputArea.removeOnLayoutChangeListener(state.inputAreaObserver);
+                }
+            }
             state.decorLayoutObserverInstalled = false;
+            state.decorLayoutObserver = null;
+            state.globalLayoutObserver = null;
+            state.inputAreaObserver = null;
+            state.observedInputArea = null;
         }
         clearBlurEffects(window, state);
         try {
@@ -976,6 +1033,9 @@ public final class GboardFrostedGlassRuntime {
         long layoutGeneration;
         boolean decorLayoutObserverInstalled;
         View.OnLayoutChangeListener decorLayoutObserver;
+        android.view.ViewTreeObserver.OnGlobalLayoutListener globalLayoutObserver;
+        View.OnLayoutChangeListener inputAreaObserver;
+        WeakReference<View> observedInputArea;
 
         State(Window window) {
             WindowManager.LayoutParams attributes = window.getAttributes();

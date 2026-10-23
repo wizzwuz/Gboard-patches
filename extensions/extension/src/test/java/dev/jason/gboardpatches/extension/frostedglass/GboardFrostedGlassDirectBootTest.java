@@ -178,6 +178,39 @@ public final class GboardFrostedGlassDirectBootTest {
     }
 
     @Test
+    public void floatingKeyboardFromStylusToolbarAppliesFrostedGlass() {
+        GboardFrostedGlassSettings.writeEnabled(application, true);
+        GboardFrostedGlassSettings.writeStylusCompat(application, true);
+        Assert.assertTrue(GboardFrostedGlassSettingsRuntime.isStylusCompatEnabled(application));
+
+        TestInputMethodService service = Robolectric.setupService(TestInputMethodService.class);
+        service.setCustomInputViewShown(false);
+        Dialog dialog = service.getWindow();
+        Window window = dialog != null ? dialog.getWindow() : null;
+        Assert.assertNotNull(window);
+        View decor = window.getDecorView();
+        Assert.assertNotNull(decor);
+
+        // In stylus handwriting mode (no keyboard root), shouldSkipForStylus is true
+        Assert.assertTrue(GboardFrostedGlassRuntime.shouldSkipForStylus(application, window, decor));
+
+        // When user opens floating keyboard from toolbar, .keyboard-base-area is added to decor
+        FrameLayout floatingRoot = new FrameLayout(application);
+        floatingRoot.setTag(".keyboard-base-area");
+        floatingRoot.layout(0, 0, 400, 300);
+        floatingRoot.setVisibility(View.VISIBLE);
+        ((FrameLayout) decor).addView(floatingRoot);
+
+        // With visible floating keyboard root, shouldSkipForStylus must be false!
+        Assert.assertFalse(GboardFrostedGlassRuntime.shouldSkipForStylus(application, window, decor));
+        Assert.assertTrue(GboardFrostedGlassRuntime.isFloatingKeyboard(window));
+
+        // When floating keyboard is removed/hidden, shouldSkipForStylus returns to true
+        ((FrameLayout) decor).removeView(floatingRoot);
+        Assert.assertTrue(GboardFrostedGlassRuntime.shouldSkipForStylus(application, window, decor));
+    }
+
+    @Test
     public void floatingKeyboardDetectedAndPreservesGeometry() {
         Assert.assertTrue(GboardFrostedGlassRuntime.isBoundedSurface(300, 1000));
         Assert.assertFalse(GboardFrostedGlassRuntime.isBoundedSurface(1000, 1000));
