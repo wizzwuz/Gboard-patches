@@ -16,3 +16,10 @@ internal val gboardFrostedGlassFeatureMarkerPatch = resourcePatch(
     compatibleWith(COMPATIBILITY_GBOARD)
     finalize { applyFeatureMarker(FROSTED_GLASS_FEATURE_MARKER) }
 }
+
+internal val gboardFrostedGlassStylusCompatFeatureMarkerPatch = resourcePatch(
+    description = "標記 Frosted Glass Stylus Compat feature 已被打入 target APK。",
+) {
+    compatibleWith(COMPATIBILITY_GBOARD)
+    finalize { applyFeatureMarker(FROSTED_GLASS_STYLUS_COMPAT_MARKER) }
+}

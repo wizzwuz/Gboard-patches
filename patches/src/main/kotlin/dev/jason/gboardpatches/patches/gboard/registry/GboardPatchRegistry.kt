@@ -74,10 +74,9 @@ import dev.jason.gboardpatches.patches.gboard.features.packagerename.isValidGboa
 import dev.jason.gboardpatches.patches.gboard.features.quickinsert.gboardQuickInsertFeatureMarkerPatch
 import dev.jason.gboardpatches.patches.gboard.features.quickinsert.gboardQuickInsertFlagValuePatch
 import dev.jason.gboardpatches.patches.gboard.features.roundedkeyboard.gboardRoundedKeyboardFeatureMarkerPatch
-import dev.jason.gboardpatches.patches.gboard.features.featureflags.applyFeatureMarker
-import dev.jason.gboardpatches.patches.gboard.features.frostedglass.FROSTED_GLASS_STYLUS_COMPAT_MARKER
 import dev.jason.gboardpatches.patches.gboard.features.frostedglass.gboardFrostedGlassFeatureMarkerPatch
 import dev.jason.gboardpatches.patches.gboard.features.frostedglass.gboardFrostedGlassLifecyclePatch
+import dev.jason.gboardpatches.patches.gboard.features.frostedglass.gboardFrostedGlassStylusCompatFeatureMarkerPatch
 import dev.jason.gboardpatches.patches.gboard.features.settingshomepage.gboardSettingsHomepageBytecodePatch
 import dev.jason.gboardpatches.patches.gboard.features.settingshomepage.gboardSettingsHomepageFeatureMarkerPatch
 import dev.jason.gboardpatches.patches.gboard.features.signaturebypass.gboardSignatureBypassBytecodePatch
@@ -418,25 +417,27 @@ val gboardFrostedGlassPatch = gboardPublicResourcePatch(
 ) {
     compatibleWith(COMPATIBILITY_GBOARD)
 
-    val stylusHandwritingCompat = booleanOption(
-        key = "stylus_handwriting_compat",
-        default = true,
-        title = "手寫筆懸浮工具列相容性 / Stylus Handwriting Compatibility",
-        description = "手寫筆輸入時防止懸浮工具列破版與閃爍\n" +
-            "Prevent floating toolbar breakage and flickering during stylus handwriting.",
-    )
-
     dependsOn(
         gboardPatchesSettingsPatch,
         gboardFrostedGlassFeatureMarkerPatch,
         gboardFrostedGlassLifecyclePatch,
     )
+}
 
-    finalize {
-        if (stylusHandwritingCompat.value != false) {
-            applyFeatureMarker(FROSTED_GLASS_STYLUS_COMPAT_MARKER)
-        }
-    }
+@Suppress("unused")
+val gboardFrostedGlassStylusCompatPatch = gboardPublicResourcePatch(
+    featureId = "frosted_glass_stylus_compat",
+    name = "Stylus Handwriting Compatibility",
+    description = "手寫筆輸入時防止懸浮工具列破版與閃爍\n" +
+        "Prevent floating toolbar breakage and flickering during stylus handwriting.",
+    default = true,
+) {
+    compatibleWith(COMPATIBILITY_GBOARD)
+
+    dependsOn(
+        gboardPatchesSettingsPatch,
+        gboardFrostedGlassStylusCompatFeatureMarkerPatch,
+    )
 }
 
 @Suppress("unused")
@@ -913,6 +914,7 @@ object GboardPublishedPatchCatalog {
         gboardAccessibilityLayoutPatch,
         gboardRoundedKeyboardPanelPatch,
         gboardFrostedGlassPatch,
+        gboardFrostedGlassStylusCompatPatch,
         gboardAccessPointCountPatch,
         gboardCloseProactiveSuggestionsPatch,
         gboardFlowModeAnimationPatch,

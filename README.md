@@ -63,6 +63,12 @@ Import custom ZIP themes and beautiful themes from the official Rboard repositor
 </details>
 
 <details>
+  <summary><code>Stylus Handwriting Compatibility</code></summary>
+
+  Prevent floating toolbar breakage and flickering during stylus handwriting when using Frosted Glass.
+</details>
+
+<details>
   <summary><code>FTP Server</code></summary>
 
   Hosts an FTP server on your phone so desktop FTP clients can browse, upload, download, and resume file transfers over the same LAN. It supports anonymous or password-protected access, a configurable control and passive port range, read-only mode, <code>/sdcard</code> or a user-selected folder as the root, live transfer progress, retained partial uploads, and an optional Quick Settings Tile.
