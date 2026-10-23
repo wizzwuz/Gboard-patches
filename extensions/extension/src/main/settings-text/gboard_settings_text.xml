@@ -68,6 +68,14 @@
         <translation locale="en">Enter opacity 0-100%</translation>
         <translation locale="zh-Hant">輸入透明度 0-100%</translation>
     </string>
+    <string name="gboard_patches_frosted_glass_stylus_compat_title">
+        <translation locale="en">Stylus handwriting compatibility</translation>
+        <translation locale="zh-Hant">手寫筆輸入相容性</translation>
+    </string>
+    <string name="gboard_patches_frosted_glass_stylus_compat_summary">
+        <translation locale="en">Prevent floating toolbar breakage and screen flickering when using stylus handwriting in text fields.</translation>
+        <translation locale="zh-Hant">防止在文字欄位中使用手寫筆時懸浮工具列錯位與畫面閃爍。</translation>
+    </string>
     <string name="gboard_patches_activity_title">
         <translation locale="en">Patches</translation>
         <translation locale="zh-Hant">Patches</translation>

@@ -44,4 +44,12 @@ public final class GboardFrostedGlassSettingsRuntime {
         }
         return -1;
     }
+
+    public static boolean isStylusCompatEnabled(android.content.Context context) {
+        try {
+            return GboardFrostedGlassSettings.readStylusCompat(context);
+        } catch (Throwable ignored) {
+            return GboardFrostedGlassSettings.DEFAULT_STYLUS_COMPAT;
+        }
+    }
 }

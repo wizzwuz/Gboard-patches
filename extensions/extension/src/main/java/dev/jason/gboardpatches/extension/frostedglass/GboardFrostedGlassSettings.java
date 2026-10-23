@@ -3,11 +3,13 @@ package dev.jason.gboardpatches.extension.frostedglass;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import dev.jason.gboardpatches.extension.settings.GboardPatchesFeatureAvailability;
 import dev.jason.gboardpatches.extension.settings.GboardPatchesSettings;
 
 /** Settings owned by the module; the theme ZIP remains the source of palette and alpha. */
 public final class GboardFrostedGlassSettings {
     public static final String PREF_KEY_ENABLED = "pref_frosted_glass_enabled";
+    public static final String PREF_KEY_STYLUS_COMPAT = "pref_frosted_glass_stylus_compat";
     public static final String PREF_KEY_BLUR_RADIUS_PX = "pref_frosted_glass_blur_radius_px";
     public static final String PREF_KEY_TRANSPARENCY_MODE = "pref_frosted_glass_transparency_mode";
     public static final String PREF_KEY_CUSTOM_OPACITY = "pref_frosted_glass_custom_opacity";
@@ -15,6 +17,7 @@ public final class GboardFrostedGlassSettings {
     private static final String PREF_KEY_BODY_ALPHA = "pref_frosted_glass_body_alpha";
     private static final String PREF_KEY_KEYTOP_ALPHA = "pref_frosted_glass_keytop_alpha";
     public static final boolean DEFAULT_ENABLED = false;
+    public static final boolean DEFAULT_STYLUS_COMPAT = true;
     public static final int DEFAULT_BLUR_STRENGTH = 20;
     public static final String TRANSPARENCY_MODE_THEME = "theme";
     public static final String TRANSPARENCY_MODE_CUSTOM = "custom";
@@ -44,6 +47,45 @@ public final class GboardFrostedGlassSettings {
             }
         }
         return DEFAULT_ENABLED;
+    }
+
+    public static boolean readStylusCompat(Context context) {
+        if (context == null) {
+            return DEFAULT_STYLUS_COMPAT;
+        }
+        SharedPreferences preferences = GboardPatchesSettings.preferences(context);
+        if (preferences != null && preferences.contains(PREF_KEY_STYLUS_COMPAT)) {
+            return readStylusCompat(preferences);
+        }
+        return GboardPatchesFeatureAvailability.hasFeature(
+                context, GboardPatchesFeatureAvailability.FEATURE_FROSTED_GLASS_STYLUS_COMPAT);
+    }
+
+    public static boolean readStylusCompat(SharedPreferences preferences) {
+        if (preferences == null) {
+            return DEFAULT_STYLUS_COMPAT;
+        }
+        Object raw = preferences.getAll().get(PREF_KEY_STYLUS_COMPAT);
+        if (raw instanceof Boolean value) {
+            return value.booleanValue();
+        }
+        if (raw instanceof String value) {
+            if ("true".equalsIgnoreCase(value)) {
+                return true;
+            }
+            if ("false".equalsIgnoreCase(value)) {
+                return false;
+            }
+        }
+        return DEFAULT_STYLUS_COMPAT;
+    }
+
+    public static boolean writeStylusCompat(Context context, boolean enabled) {
+        if (context == null) {
+            return false;
+        }
+        return GboardPatchesSettings.preferences(context)
+                .edit().putBoolean(PREF_KEY_STYLUS_COMPAT, enabled).commit();
     }
 
     public static int readBlurStrength(SharedPreferences preferences) {

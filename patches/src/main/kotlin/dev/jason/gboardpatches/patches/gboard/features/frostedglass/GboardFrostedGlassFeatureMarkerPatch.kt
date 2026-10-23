@@ -7,6 +7,9 @@ import dev.jason.gboardpatches.patches.shared.Constants.COMPATIBILITY_GBOARD
 internal const val FROSTED_GLASS_FEATURE_MARKER =
     "dev.jason.gboardpatches.feature.frosted_glass"
 
+internal const val FROSTED_GLASS_STYLUS_COMPAT_MARKER =
+    "dev.jason.gboardpatches.feature.frosted_glass_stylus_compat"
+
 internal val gboardFrostedGlassFeatureMarkerPatch = resourcePatch(
     description = "標記 Frosted Glass feature 已被打入 target APK。",
 ) {

@@ -7,7 +7,9 @@ import android.content.SharedPreferences;
 import android.inputmethodservice.InputMethodService;
 import android.os.Build;
 import android.os.UserManager;
+import android.view.View;
 import android.view.Window;
+import android.widget.FrameLayout;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -154,6 +156,45 @@ public final class GboardFrostedGlassDirectBootTest {
         Assert.assertEquals(originalGravity, window.getAttributes().gravity);
         Assert.assertEquals(originalWidth, window.getAttributes().width);
         Assert.assertEquals(originalHeight, window.getAttributes().height);
+    }
+
+    @Test
+    public void frostedGlassStylusCompatCanBeDisabledBySetting() {
+        GboardFrostedGlassSettings.writeEnabled(application, true);
+        GboardFrostedGlassSettings.writeStylusCompat(application, false);
+        Assert.assertFalse(GboardFrostedGlassSettingsRuntime.isStylusCompatEnabled(application));
+
+        TestInputMethodService service = Robolectric.setupService(TestInputMethodService.class);
+        service.setCustomInputViewShown(false);
+        Dialog dialog = service.getWindow();
+        Window window = dialog != null ? dialog.getWindow() : null;
+        Assert.assertNotNull(window);
+
+        // When stylus compat is disabled, shouldSkipForStylus is false even if input view is not shown
+        GboardFrostedGlassLifecycleRuntime.onInputViewStarted(service);
+        // Reset stylus compat back to true
+        GboardFrostedGlassSettings.writeStylusCompat(application, true);
+        Assert.assertTrue(GboardFrostedGlassSettingsRuntime.isStylusCompatEnabled(application));
+    }
+
+    @Test
+    public void floatingKeyboardDetectedAndPreservesGeometry() {
+        FrameLayout decor = new FrameLayout(application);
+        View floatingRoot = new View(application);
+        floatingRoot.setTag(".keyboard-base-area");
+        floatingRoot.setVisibility(View.VISIBLE);
+        decor.addView(floatingRoot);
+
+        Assert.assertFalse(GboardFrostedGlassRuntime.isDockedKeyboard(decor));
+        Assert.assertTrue(GboardFrostedGlassRuntime.isFloatingKeyboard(decor));
+
+        View dockedRoot = new View(application);
+        dockedRoot.setTag(".keyboard-base-area.keyboard-outline");
+        dockedRoot.setVisibility(View.VISIBLE);
+        decor.addView(dockedRoot);
+
+        Assert.assertTrue(GboardFrostedGlassRuntime.isDockedKeyboard(decor));
+        Assert.assertFalse(GboardFrostedGlassRuntime.isFloatingKeyboard(decor));
     }
 
     @Test

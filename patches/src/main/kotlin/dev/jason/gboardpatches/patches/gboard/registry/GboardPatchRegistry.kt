@@ -4,6 +4,7 @@ import app.morphe.patcher.patch.Patch
 import dev.jason.gboardpatches.patches.gboard.features.editingaccesspoints.gboardEditingAccessPointsFeatureMarkerPatch
 import dev.jason.gboardpatches.patches.gboard.features.editingaccesspoints.gboardEditingAccessPointsLifecyclePatch
 import app.morphe.patcher.patch.ResourcePatchBuilder
+import app.morphe.patcher.patch.booleanOption
 import app.morphe.patcher.patch.resourcePatch
 import app.morphe.patcher.patch.stringOption
 import com.google.gson.GsonBuilder
@@ -73,6 +74,8 @@ import dev.jason.gboardpatches.patches.gboard.features.packagerename.isValidGboa
 import dev.jason.gboardpatches.patches.gboard.features.quickinsert.gboardQuickInsertFeatureMarkerPatch
 import dev.jason.gboardpatches.patches.gboard.features.quickinsert.gboardQuickInsertFlagValuePatch
 import dev.jason.gboardpatches.patches.gboard.features.roundedkeyboard.gboardRoundedKeyboardFeatureMarkerPatch
+import dev.jason.gboardpatches.patches.gboard.features.featureflags.applyFeatureMarker
+import dev.jason.gboardpatches.patches.gboard.features.frostedglass.FROSTED_GLASS_STYLUS_COMPAT_MARKER
 import dev.jason.gboardpatches.patches.gboard.features.frostedglass.gboardFrostedGlassFeatureMarkerPatch
 import dev.jason.gboardpatches.patches.gboard.features.frostedglass.gboardFrostedGlassLifecyclePatch
 import dev.jason.gboardpatches.patches.gboard.features.settingshomepage.gboardSettingsHomepageBytecodePatch
@@ -415,11 +418,25 @@ val gboardFrostedGlassPatch = gboardPublicResourcePatch(
 ) {
     compatibleWith(COMPATIBILITY_GBOARD)
 
+    val stylusHandwritingCompat = booleanOption(
+        key = "stylus_handwriting_compat",
+        default = true,
+        title = "手寫筆懸浮工具列相容性 / Stylus Handwriting Compatibility",
+        description = "手寫筆輸入時防止懸浮工具列破版與閃爍\n" +
+            "Prevent floating toolbar breakage and flickering during stylus handwriting.",
+    )
+
     dependsOn(
         gboardPatchesSettingsPatch,
         gboardFrostedGlassFeatureMarkerPatch,
         gboardFrostedGlassLifecyclePatch,
     )
+
+    finalize {
+        if (stylusHandwritingCompat.value != false) {
+            applyFeatureMarker(FROSTED_GLASS_STYLUS_COMPAT_MARKER)
+        }
+    }
 }
 
 @Suppress("unused")

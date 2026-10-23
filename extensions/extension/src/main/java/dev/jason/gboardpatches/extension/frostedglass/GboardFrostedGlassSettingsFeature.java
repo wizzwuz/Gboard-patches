@@ -35,6 +35,8 @@ public final class GboardFrostedGlassSettingsFeature
     private final String opacityTitle;
     private final String opacitySummary;
     private final String opacityHint;
+    private final String stylusCompatTitle;
+    private final String stylusCompatSummary;
 
     public GboardFrostedGlassSettingsFeature(Context context) {
         entryTitle = text(context, R.string.gboard_patches_frosted_glass_title);
@@ -55,6 +57,8 @@ public final class GboardFrostedGlassSettingsFeature
         opacityTitle = text(context, R.string.gboard_patches_frosted_glass_opacity_title);
         opacitySummary = text(context, R.string.gboard_patches_frosted_glass_opacity_summary);
         opacityHint = text(context, R.string.gboard_patches_frosted_glass_opacity_hint);
+        stylusCompatTitle = text(context, R.string.gboard_patches_frosted_glass_stylus_compat_title);
+        stylusCompatSummary = text(context, R.string.gboard_patches_frosted_glass_stylus_compat_summary);
     }
 
     private static String text(Context context, int resourceId) {
@@ -97,6 +101,15 @@ public final class GboardFrostedGlassSettingsFeature
                     enabledTitle, enabledSummary, true, enabled, value -> {
                         if (!GboardFrostedGlassSettings.writeEnabled(context, value)) {
                             Log.w(TAG, "Failed to persist frosted glass state");
+                        }
+                        GboardPatchesSettingsContract.refresh(host);
+                        requestRestart(host);
+                    }));
+            boolean stylusCompat = GboardFrostedGlassSettings.readStylusCompat(context);
+            rows.add(new GboardPatchesSettingsContract.ToggleRow(
+                    stylusCompatTitle, stylusCompatSummary, enabled, stylusCompat, value -> {
+                        if (!GboardFrostedGlassSettings.writeStylusCompat(context, value)) {
+                            Log.w(TAG, "Failed to persist stylus compat state");
                         }
                         GboardPatchesSettingsContract.refresh(host);
                         requestRestart(host);
