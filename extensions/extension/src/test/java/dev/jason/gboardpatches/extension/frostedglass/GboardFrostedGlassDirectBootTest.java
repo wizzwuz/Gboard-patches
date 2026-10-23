@@ -190,6 +190,8 @@ public final class GboardFrostedGlassDirectBootTest {
         Assert.assertNotNull(window);
         View decor = window.getDecorView();
         Assert.assertNotNull(decor);
+        decor.layout(0, 0, 1080, 2400);
+        decor.setVisibility(View.VISIBLE);
 
         // In stylus handwriting mode (no keyboard root), shouldSkipForStylus is true
         Assert.assertTrue(GboardFrostedGlassRuntime.shouldSkipForStylus(application, window, decor));

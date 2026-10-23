@@ -806,11 +806,23 @@ public final class GboardFrostedGlassRuntime {
         return null;
     }
 
+    private static boolean isHierarchyVisible(View view) {
+        View current = view;
+        while (current != null) {
+            if (current.getVisibility() != View.VISIBLE) {
+                return false;
+            }
+            android.view.ViewParent parent = current.getParent();
+            current = (parent instanceof View) ? (View) parent : null;
+        }
+        return true;
+    }
+
     private static boolean isUsableRoot(View view) {
         return view.getVisibility() == View.VISIBLE
                 && view.getWidth() > 0
                 && view.getHeight() > 0
-                && view.isShown();
+                && isHierarchyVisible(view);
     }
 
     private static void applyThemeOpacity(View view, int customOpacity, State state) {
