@@ -8,6 +8,9 @@ import dev.jason.gboardpatches.extension.settings.GboardPatchesSettings;
 /** Settings owned by the module; the theme ZIP remains the source of palette and alpha. */
 public final class GboardFrostedGlassSettings {
     public static final String PREF_KEY_ENABLED = "pref_frosted_glass_enabled";
+    public static final String PREF_KEY_DISABLE_WHILE_STYLUS =
+            "pref_frosted_glass_disable_while_stylus";
+    public static final boolean DEFAULT_DISABLE_WHILE_STYLUS = false;
     public static final String PREF_KEY_BLUR_RADIUS_PX = "pref_frosted_glass_blur_radius_px";
     public static final String PREF_KEY_TRANSPARENCY_MODE = "pref_frosted_glass_transparency_mode";
     public static final String PREF_KEY_CUSTOM_OPACITY = "pref_frosted_glass_custom_opacity";
@@ -44,6 +47,20 @@ public final class GboardFrostedGlassSettings {
             }
         }
         return DEFAULT_ENABLED;
+    }
+
+    public static boolean readDisableWhileStylus(SharedPreferences preferences) {
+        return preferences != null
+                && preferences.getBoolean(PREF_KEY_DISABLE_WHILE_STYLUS,
+                        DEFAULT_DISABLE_WHILE_STYLUS);
+    }
+
+    public static boolean writeDisableWhileStylus(Context context, boolean disabled) {
+        if (context == null) {
+            return false;
+        }
+        return GboardPatchesSettings.preferences(context).edit()
+                .putBoolean(PREF_KEY_DISABLE_WHILE_STYLUS, disabled).commit();
     }
 
     public static int readBlurStrength(SharedPreferences preferences) {
@@ -102,6 +119,10 @@ public final class GboardFrostedGlassSettings {
     }
 
     public static void ensureDefaults(SharedPreferences preferences) {
+        if (preferences != null && !preferences.contains(PREF_KEY_DISABLE_WHILE_STYLUS)) {
+            preferences.edit().putBoolean(PREF_KEY_DISABLE_WHILE_STYLUS,
+                    DEFAULT_DISABLE_WHILE_STYLUS).apply();
+        }
         if (preferences != null && !preferences.contains(PREF_KEY_ENABLED)) {
             preferences.edit()
                     .putBoolean(PREF_KEY_ENABLED, DEFAULT_ENABLED)

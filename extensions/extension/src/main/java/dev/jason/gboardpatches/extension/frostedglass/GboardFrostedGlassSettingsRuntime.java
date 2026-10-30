@@ -22,6 +22,15 @@ public final class GboardFrostedGlassSettingsRuntime {
         }
     }
 
+    /** Whether the user requested blur suppression during active stylus handwriting. */
+    public static boolean disableWhileStylus() {
+        try {
+            return GboardFrostedGlassSettings.readDisableWhileStylus(prefs());
+        } catch (Throwable ignored) {
+            return GboardFrostedGlassSettings.DEFAULT_DISABLE_WHILE_STYLUS;
+        }
+    }
+
     public static int blurRadiusPx() {
         try {
             int strength = GboardFrostedGlassSettings.readBlurStrength(prefs());

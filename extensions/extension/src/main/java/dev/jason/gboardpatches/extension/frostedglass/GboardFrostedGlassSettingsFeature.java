@@ -25,6 +25,8 @@ public final class GboardFrostedGlassSettingsFeature
     private final String sectionTitle;
     private final String enabledTitle;
     private final String enabledSummary;
+    private final String stylusTitle;
+    private final String stylusSummary;
     private final String radiusTitle;
     private final String radiusSummary;
     private final String radiusHint;
@@ -45,6 +47,8 @@ public final class GboardFrostedGlassSettingsFeature
         sectionTitle = text(context, R.string.gboard_patches_frosted_glass_section);
         enabledTitle = text(context, R.string.gboard_patches_frosted_glass_enabled_title);
         enabledSummary = text(context, R.string.gboard_patches_frosted_glass_enabled_summary);
+        stylusTitle = "Disable frosted glass during stylus handwriting";
+        stylusSummary = "Suppress keyboard blur while handwriting with a stylus (requires stylus lifecycle support in the target Gboard build).";
         radiusTitle = text(context, R.string.gboard_patches_frosted_glass_radius_title);
         radiusSummary = text(context, R.string.gboard_patches_frosted_glass_radius_summary);
         radiusHint = text(context, R.string.gboard_patches_frosted_glass_radius_hint);
@@ -89,6 +93,8 @@ public final class GboardFrostedGlassSettingsFeature
             GboardFrostedGlassSettings.ensureDefaults(preferences);
             boolean enabled = GboardFrostedGlassSettings.readEnabled(preferences);
             int strength = GboardFrostedGlassSettings.readBlurStrength(preferences);
+            boolean disableWhileStylus =
+                    GboardFrostedGlassSettings.readDisableWhileStylus(preferences);
             String transparencyMode = GboardFrostedGlassSettings.readTransparencyMode(preferences);
             int opacity = GboardFrostedGlassSettings.readCustomOpacity(preferences);
             java.util.List<GboardPatchesSettingsContract.Row> rows =
