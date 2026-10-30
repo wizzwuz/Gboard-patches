@@ -1,5 +1,6 @@
 package dev.jason.gboardpatches.extension.frostedglass;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import dev.jason.gboardpatches.extension.flagsettings.GboardFlagRuntimeContext;
 
@@ -29,6 +30,14 @@ public final class GboardFrostedGlassSettingsRuntime {
         } catch (Throwable ignored) {
             return GboardFrostedGlassSettings.DEFAULT_DISABLE_WHILE_STYLUS;
         }
+    }
+
+    public static boolean disableWhileStylus(Context context) {
+        return disableWhileStylus();
+    }
+
+    public static boolean isStylusCompatEnabled(Context context) {
+        return disableWhileStylus();
     }
 
     public static int blurRadiusPx() {

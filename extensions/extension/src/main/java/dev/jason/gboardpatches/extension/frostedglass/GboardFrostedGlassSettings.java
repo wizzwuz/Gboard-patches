@@ -10,7 +10,10 @@ public final class GboardFrostedGlassSettings {
     public static final String PREF_KEY_ENABLED = "pref_frosted_glass_enabled";
     public static final String PREF_KEY_DISABLE_WHILE_STYLUS =
             "pref_frosted_glass_disable_while_stylus";
+    public static final String PREF_KEY_STYLUS_COMPAT =
+            "pref_frosted_glass_stylus_compat";
     public static final boolean DEFAULT_DISABLE_WHILE_STYLUS = false;
+    public static final boolean DEFAULT_STYLUS_COMPAT = false;
     public static final String PREF_KEY_BLUR_RADIUS_PX = "pref_frosted_glass_blur_radius_px";
     public static final String PREF_KEY_TRANSPARENCY_MODE = "pref_frosted_glass_transparency_mode";
     public static final String PREF_KEY_CUSTOM_OPACITY = "pref_frosted_glass_custom_opacity";
@@ -28,6 +31,10 @@ public final class GboardFrostedGlassSettings {
     public static final int MAX_BLUR_RADIUS_PX = 160;
 
     private GboardFrostedGlassSettings() {
+    }
+
+    private static SharedPreferences preferences(Context context) {
+        return GboardPatchesSettings.preferences(context);
     }
 
     public static boolean readEnabled(SharedPreferences preferences) {
@@ -50,17 +57,63 @@ public final class GboardFrostedGlassSettings {
     }
 
     public static boolean readDisableWhileStylus(SharedPreferences preferences) {
-        return preferences != null
-                && preferences.getBoolean(PREF_KEY_DISABLE_WHILE_STYLUS,
-                        DEFAULT_DISABLE_WHILE_STYLUS);
+        if (preferences == null) {
+            return DEFAULT_DISABLE_WHILE_STYLUS;
+        }
+        if (preferences.contains(PREF_KEY_DISABLE_WHILE_STYLUS)) {
+            Object raw = preferences.getAll().get(PREF_KEY_DISABLE_WHILE_STYLUS);
+            if (raw instanceof Boolean value) {
+                return value.booleanValue();
+            }
+            if (raw instanceof String value) {
+                if ("true".equalsIgnoreCase(value)) {
+                    return true;
+                }
+                if ("false".equalsIgnoreCase(value)) {
+                    return false;
+                }
+            }
+        }
+        if (preferences.contains(PREF_KEY_STYLUS_COMPAT)) {
+            Object raw = preferences.getAll().get(PREF_KEY_STYLUS_COMPAT);
+            if (raw instanceof Boolean value) {
+                return value.booleanValue();
+            }
+            if (raw instanceof String value) {
+                if ("true".equalsIgnoreCase(value)) {
+                    return true;
+                }
+                if ("false".equalsIgnoreCase(value)) {
+                    return false;
+                }
+            }
+        }
+        return DEFAULT_DISABLE_WHILE_STYLUS;
     }
 
     public static boolean writeDisableWhileStylus(Context context, boolean disabled) {
         if (context == null) {
             return false;
         }
-        return GboardPatchesSettings.preferences(context).edit()
-                .putBoolean(PREF_KEY_DISABLE_WHILE_STYLUS, disabled).commit();
+        return preferences(context).edit()
+                .putBoolean(PREF_KEY_DISABLE_WHILE_STYLUS, disabled)
+                .putBoolean(PREF_KEY_STYLUS_COMPAT, disabled)
+                .commit();
+    }
+
+    public static boolean readStylusCompat(SharedPreferences preferences) {
+        return readDisableWhileStylus(preferences);
+    }
+
+    public static boolean readStylusCompat(Context context) {
+        if (context == null) {
+            return DEFAULT_STYLUS_COMPAT;
+        }
+        return readDisableWhileStylus(preferences(context));
+    }
+
+    public static boolean writeStylusCompat(Context context, boolean enabled) {
+        return writeDisableWhileStylus(context, enabled);
     }
 
     public static int readBlurStrength(SharedPreferences preferences) {
@@ -119,7 +172,8 @@ public final class GboardFrostedGlassSettings {
     }
 
     public static void ensureDefaults(SharedPreferences preferences) {
-        if (preferences != null && !preferences.contains(PREF_KEY_DISABLE_WHILE_STYLUS)) {
+        if (preferences != null && !preferences.contains(PREF_KEY_DISABLE_WHILE_STYLUS)
+                && !preferences.contains(PREF_KEY_STYLUS_COMPAT)) {
             preferences.edit().putBoolean(PREF_KEY_DISABLE_WHILE_STYLUS,
                     DEFAULT_DISABLE_WHILE_STYLUS).apply();
         }
@@ -149,7 +203,7 @@ public final class GboardFrostedGlassSettings {
         if (context == null) {
             return false;
         }
-        boolean committed = GboardPatchesSettings.preferences(context)
+        boolean committed = preferences(context)
                 .edit().putBoolean(PREF_KEY_ENABLED, enabled).commit();
         if (committed) {
 
@@ -161,7 +215,7 @@ public final class GboardFrostedGlassSettings {
         if (context == null) {
             return false;
         }
-        boolean committed = GboardPatchesSettings.preferences(context)
+        boolean committed = preferences(context)
                 .edit().putString(PREF_KEY_BLUR_RADIUS_PX,
                         Integer.toString(sanitizeBlurStrength(strength))).commit();
         if (committed) {
@@ -176,7 +230,7 @@ public final class GboardFrostedGlassSettings {
         }
         String value = TRANSPARENCY_MODE_CUSTOM.equals(mode)
                 ? TRANSPARENCY_MODE_CUSTOM : TRANSPARENCY_MODE_THEME;
-        boolean committed = GboardPatchesSettings.preferences(context).edit()
+        boolean committed = preferences(context).edit()
                 .putString(PREF_KEY_TRANSPARENCY_MODE, value).commit();
         if (committed) {
 
@@ -188,7 +242,7 @@ public final class GboardFrostedGlassSettings {
         if (context == null) {
             return false;
         }
-        boolean committed = GboardPatchesSettings.preferences(context).edit()
+        boolean committed = preferences(context).edit()
                 .putInt(PREF_KEY_CUSTOM_OPACITY, sanitizeOpacity(opacity))
                 .putString(PREF_KEY_HEADER_ALPHA, Integer.toString(alphaByte(opacity)))
                 .putString(PREF_KEY_BODY_ALPHA, Integer.toString(alphaByte(opacity)))

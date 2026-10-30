@@ -107,6 +107,14 @@ public final class GboardFrostedGlassSettingsFeature
                         GboardPatchesSettingsContract.refresh(host);
                         requestRestart(host);
                     }));
+            rows.add(new GboardPatchesSettingsContract.ToggleRow(
+                    stylusTitle, stylusSummary, enabled, disableWhileStylus, value -> {
+                        if (!GboardFrostedGlassSettings.writeDisableWhileStylus(context, value)) {
+                            Log.w(TAG, "Failed to persist disable while stylus state");
+                        }
+                        GboardPatchesSettingsContract.refresh(host);
+                        requestRestart(host);
+                    }));
             rows.add(new GboardPatchesSettingsContract.SelectorRow(
                     radiusTitle, radiusSummary, Integer.toString(strength), enabled,
                     () -> GboardPatchesSettingsContract.showPositiveIntegerDialog(host,
