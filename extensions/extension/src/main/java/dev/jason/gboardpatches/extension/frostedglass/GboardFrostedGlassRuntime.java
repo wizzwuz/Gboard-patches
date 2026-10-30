@@ -152,80 +152,28 @@ public final class GboardFrostedGlassRuntime {
         }
     }
 
-    static boolean isUserUnlocked(Context context) {
-        return GboardFlagRuntimeContext.isUserUnlocked(context);
-    }
-
-    private static boolean isInputViewShown(Context context) {
+    private static boolean isStylusActive(Context context) {
         if (context instanceof InputMethodService service) {
             try {
-                return service.isInputViewShown();
+                return !service.isInputViewShown();
             } catch (Throwable ignored) {
-                return true;
+                return false;
             }
         }
         InputMethodService active = activeService.get();
         if (active != null) {
             try {
-                return active.isInputViewShown();
+                return !active.isInputViewShown();
             } catch (Throwable ignored) {
-                return true;
-            }
-        }
-        return true;
-    }
-
-    static boolean shouldSkipForStylus(Context context) {
-        return shouldSkipForStylus(context, null, null);
-    }
-
-    static boolean shouldSkipForStylus(Context context, Window window, View decor) {
-        if (!GboardFrostedGlassSettingsRuntime.disableWhileStylus()) {
-            return false;
-        }
-        if (decor != null) {
-            View root = findKeyboardRoot(decor);
-            if (root != null) {
                 return false;
             }
-            return true;
-        }
-        if (!isInputViewShown(context)) {
-            return true;
         }
         return false;
     }
 
-    private static void applyWindowGeometry(Window window, State state) {
-        try {
-            WindowManager.LayoutParams lp = window.getAttributes();
-            if (lp != null && lp.height == WindowManager.LayoutParams.WRAP_CONTENT
-                    && (lp.gravity & Gravity.BOTTOM) == Gravity.BOTTOM) {
-                return;
-            }
-            window.clearFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND);
-            window.setLayout(WindowManager.LayoutParams.MATCH_PARENT,
-                    WindowManager.LayoutParams.WRAP_CONTENT);
-            window.setGravity(Gravity.BOTTOM);
-            state.windowGeometryChanged = true;
-        } catch (Throwable ignored) {
-            // Best effort geometry setup.
-        }
+    static boolean isUserUnlocked(Context context) {
+        return GboardFlagRuntimeContext.isUserUnlocked(context);
     }
-
-    private static void restoreWindowGeometry(Window window, State state) {
-        if (!state.windowGeometryChanged) {
-            return;
-        }
-        try {
-            window.setLayout(state.originalWidth, state.originalHeight);
-            window.setGravity(state.originalGravity);
-            state.windowGeometryChanged = false;
-        } catch (Throwable ignored) {
-            // Window geometry restoration is best effort.
-        }
-    }
-
 
     private static void reapplyAfterLayout(Window window, Context context,
             State state, long layoutGeneration) {
@@ -278,18 +226,15 @@ public final class GboardFrostedGlassRuntime {
     private static void scheduleApply(Window window, Context context) {
         try {
             State state = stateFor(window);
+            window.clearFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND);
+            window.setLayout(WindowManager.LayoutParams.MATCH_PARENT,
+                    WindowManager.LayoutParams.WRAP_CONTENT);
+            window.setGravity(Gravity.BOTTOM);
             View decor = window.getDecorView();
             if (decor == null) {
                 disable(window);
                 return;
             }
-            if (shouldSkipForStylus(context, window, decor)) {
-                clearBlurEffects(window, state);
-                restoreKeyboardLayout(state);
-                restoreWindowGeometry(window, state);
-                return;
-            }
-            applyWindowGeometry(window, state);
             constrainKeyboardSurface(decor, state);
             prepareBeforeDraw(window, context);
         } catch (Throwable ignored) {
@@ -313,17 +258,6 @@ public final class GboardFrostedGlassRuntime {
                 disable(window);
                 return;
             }
-            View decor = window.getDecorView();
-            if (decor == null) {
-                disable(window);
-                return;
-            }
-            if (shouldSkipForStylus(context, window, decor)) {
-                clearBlurEffects(window, state);
-                restoreKeyboardLayout(state);
-                restoreWindowGeometry(window, state);
-                return;
-            }
             if (!state.settingsLoaded) {
                 if (!GboardFrostedGlassSettingsRuntime.isEnabled()) {
                     disable(window);
@@ -332,6 +266,10 @@ public final class GboardFrostedGlassRuntime {
                 state.radiusPx = GboardFrostedGlassSettingsRuntime.blurRadiusPx();
                 state.customOpacity = GboardFrostedGlassSettingsRuntime.customOpacityPercent();
                 state.settingsLoaded = true;
+            }
+            if (GboardFrostedGlassSettingsRuntime.disableWhileStylus() && isStylusActive(context)) {
+                disable(window);
+                return;
             }
             int radiusPx = state.radiusPx;
             int customOpacity = state.customOpacity;
@@ -734,7 +672,6 @@ public final class GboardFrostedGlassRuntime {
         } catch (Throwable ignored) {
             // Window geometry restoration is best effort.
         }
-        state.windowGeometryChanged = false;
         Log.i(TAG, "cleared");
     }
 
@@ -975,7 +912,6 @@ public final class GboardFrostedGlassRuntime {
         long layoutGeneration;
         boolean decorLayoutObserverInstalled;
         View.OnLayoutChangeListener decorLayoutObserver;
-        boolean windowGeometryChanged;
 
         State(Window window) {
             WindowManager.LayoutParams attributes = window.getAttributes();

@@ -10,10 +10,7 @@ public final class GboardFrostedGlassSettings {
     public static final String PREF_KEY_ENABLED = "pref_frosted_glass_enabled";
     public static final String PREF_KEY_DISABLE_WHILE_STYLUS =
             "pref_frosted_glass_disable_while_stylus";
-    public static final String PREF_KEY_STYLUS_COMPAT =
-            "pref_frosted_glass_stylus_compat";
     public static final boolean DEFAULT_DISABLE_WHILE_STYLUS = false;
-    public static final boolean DEFAULT_STYLUS_COMPAT = false;
     public static final String PREF_KEY_BLUR_RADIUS_PX = "pref_frosted_glass_blur_radius_px";
     public static final String PREF_KEY_TRANSPARENCY_MODE = "pref_frosted_glass_transparency_mode";
     public static final String PREF_KEY_CUSTOM_OPACITY = "pref_frosted_glass_custom_opacity";
@@ -60,7 +57,10 @@ public final class GboardFrostedGlassSettings {
         if (preferences == null) {
             return DEFAULT_DISABLE_WHILE_STYLUS;
         }
-        if (preferences.contains(PREF_KEY_DISABLE_WHILE_STYLUS)) {
+        try {
+            return preferences.getBoolean(PREF_KEY_DISABLE_WHILE_STYLUS,
+                    DEFAULT_DISABLE_WHILE_STYLUS);
+        } catch (ClassCastException ignored) {
             Object raw = preferences.getAll().get(PREF_KEY_DISABLE_WHILE_STYLUS);
             if (raw instanceof Boolean value) {
                 return value.booleanValue();
@@ -73,22 +73,8 @@ public final class GboardFrostedGlassSettings {
                     return false;
                 }
             }
+            return DEFAULT_DISABLE_WHILE_STYLUS;
         }
-        if (preferences.contains(PREF_KEY_STYLUS_COMPAT)) {
-            Object raw = preferences.getAll().get(PREF_KEY_STYLUS_COMPAT);
-            if (raw instanceof Boolean value) {
-                return value.booleanValue();
-            }
-            if (raw instanceof String value) {
-                if ("true".equalsIgnoreCase(value)) {
-                    return true;
-                }
-                if ("false".equalsIgnoreCase(value)) {
-                    return false;
-                }
-            }
-        }
-        return DEFAULT_DISABLE_WHILE_STYLUS;
     }
 
     public static boolean writeDisableWhileStylus(Context context, boolean disabled) {
@@ -97,23 +83,7 @@ public final class GboardFrostedGlassSettings {
         }
         return preferences(context).edit()
                 .putBoolean(PREF_KEY_DISABLE_WHILE_STYLUS, disabled)
-                .putBoolean(PREF_KEY_STYLUS_COMPAT, disabled)
                 .commit();
-    }
-
-    public static boolean readStylusCompat(SharedPreferences preferences) {
-        return readDisableWhileStylus(preferences);
-    }
-
-    public static boolean readStylusCompat(Context context) {
-        if (context == null) {
-            return DEFAULT_STYLUS_COMPAT;
-        }
-        return readDisableWhileStylus(preferences(context));
-    }
-
-    public static boolean writeStylusCompat(Context context, boolean enabled) {
-        return writeDisableWhileStylus(context, enabled);
     }
 
     public static int readBlurStrength(SharedPreferences preferences) {
@@ -172,8 +142,7 @@ public final class GboardFrostedGlassSettings {
     }
 
     public static void ensureDefaults(SharedPreferences preferences) {
-        if (preferences != null && !preferences.contains(PREF_KEY_DISABLE_WHILE_STYLUS)
-                && !preferences.contains(PREF_KEY_STYLUS_COMPAT)) {
+        if (preferences != null && !preferences.contains(PREF_KEY_DISABLE_WHILE_STYLUS)) {
             preferences.edit().putBoolean(PREF_KEY_DISABLE_WHILE_STYLUS,
                     DEFAULT_DISABLE_WHILE_STYLUS).apply();
         }

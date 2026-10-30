@@ -134,27 +134,7 @@ public final class GboardFrostedGlassDirectBootTest {
                                 "text_clip_item_char_limit", Long.valueOf(20_000L)));
     }
 
-    @Test
-    public void frostedGlassDisableWhileStylusCanBeToggledBySetting() {
-        GboardFrostedGlassSettings.writeEnabled(application, true);
-        GboardFrostedGlassSettings.writeDisableWhileStylus(application, false);
-        Assert.assertFalse(GboardFrostedGlassSettingsRuntime.disableWhileStylus());
-
-        GboardFrostedGlassSettings.writeDisableWhileStylus(application, true);
-        Assert.assertTrue(GboardFrostedGlassSettingsRuntime.disableWhileStylus());
-    }
-
-    @Test
-    public void shouldSkipForStylusRespectsToggleAndRoot() {
-        GboardFrostedGlassSettings.writeDisableWhileStylus(application, false);
-        Assert.assertFalse(GboardFrostedGlassRuntime.shouldSkipForStylus(application));
-
-        GboardFrostedGlassSettings.writeDisableWhileStylus(application, true);
-        TestInputMethodService service = Robolectric.setupService(TestInputMethodService.class);
-        Assert.assertTrue(GboardFrostedGlassRuntime.shouldSkipForStylus(service));
-    }
-
-        public static final class TestInputMethodService extends InputMethodService {
+    public static final class TestInputMethodService extends InputMethodService {
         private boolean throwWhenLocked;
         private AtomicInteger lockedSharedPreferencesCounter;
 
