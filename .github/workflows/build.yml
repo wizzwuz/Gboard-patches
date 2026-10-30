@@ -11,7 +11,7 @@ jobs:
   build:
     name: Build Patches
     permissions:
-      contents: read
+      contents: write
       packages: read
     runs-on: ubuntu-latest
     steps:
@@ -44,11 +44,50 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.MORPHE_PACKAGES_TOKEN || secrets.GITHUB_TOKEN }}
         run: ./gradlew :patches:buildAndroid generatePatchesList
 
+      - name: Stage Patches
+        run: |
+          mkdir -p dist
+          echo "=== patches/build/libs content ==="
+          ls -la patches/build/libs/
+          find patches/build/libs/ -type f \( -name "*.mpp" -o -name "*.jar" \) -exec cp -v {} dist/ \;
+          for f in dist/patches-*.mpp; do
+            if [ -f "$f" ]; then
+              cp -v "$f" dist/gboard-patches.mpp
+            fi
+          done
+          cp -v patches-bundle.json dist/ || true
+          cp -v patches-list.json dist/ || true
+          echo "=== dist content ==="
+          ls -la dist/
+
       - name: Upload Patch Artifact
         uses: actions/upload-artifact@v4
         with:
           name: gboard-patches
-          path: |
-            patches/build/libs/*.mpp
-            patches-bundle.json
-            patches-list.json
+          path: dist/
+
+      - name: Upload MPP Patch File
+        uses: actions/upload-artifact@v4
+        with:
+          name: mpp-patch-file
+          path: dist/*.mpp
+
+      - name: Publish GitHub Release
+        if: github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v4.0.0
+          name: "v4.0.0 (Frosted Glass Stylus Toggle)"
+          body: |
+            ### Gboard Patches v4.0.0
+            - **Option to disable frosted glass during stylus handwriting** in text fields.
+            
+            #### Direct Download:
+            Download **`patches-4.0.0.mpp`** below to load directly into Morphe or ReVanced Manager.
+          files: |
+            dist/*.mpp
+            dist/patches-bundle.json
+            dist/patches-list.json
+          token: ${{ secrets.GITHUB_TOKEN }}
+          prerelease: false
+          make_latest: true
