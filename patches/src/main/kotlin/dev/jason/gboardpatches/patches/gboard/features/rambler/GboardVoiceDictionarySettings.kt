@@ -22,6 +22,9 @@ import org.w3c.dom.Element
 // dictionary its own Voice dictionary screen under Voice typing, opened by Gboard's own Rambler
 // settings fragment so "Clear all corrected words" keeps its confirmation dialog. That fragment
 // picks setting_rambler_voice_typing.xml once the correction list is unlocked, which leaves its
+import dev.jason.gboardpatches.patches.gboard.shared.runtimeabi.RuntimeCallEmitter
+import dev.jason.gboardpatches.patches.gboard.shared.runtimeabi.RuntimeCallId
+
 // older layout, setting_jetson_voice.xml, unused: it becomes the Voice dictionary screen.
 
 private const val ANDROID = "http://schemas.android.com/apk/res/android"
@@ -30,7 +33,6 @@ private const val DICTIONARY_SCREEN = "res/xml/setting_jetson_voice.xml"
 private const val VOICE_SCREEN = "res/xml/setting_voice_unified.xml"
 private const val RAMBLER_FRAGMENT = "com.google.android.apps.inputmethod.latin.preference.JetsonVoiceSettingsFragment"
 private const val RAMBLER_FRAGMENT_TYPE = "Lcom/google/android/apps/inputmethod/latin/preference/JetsonVoiceSettingsFragment;"
-private const val DICTIONARY_RUNTIME = "Ldev/jason/gboardpatches/extension/rambler/GboardVoiceDictionaryRuntime;"
 private const val ARGUMENTS_MESSAGE = " does not have any arguments."
 private const val HIDE_IF_FLAG = "hide_if_flag_is_false"
 
@@ -208,7 +210,7 @@ internal val voiceDictionaryFragment = bytecodePatch(
         // Opened from Voice dictionary: show the older layout, which now holds the dictionary.
         layout.addInstructionsWithLabels(0, """
             iget-object v0, p0, ${arguments.definingClass}->${arguments.name}:${arguments.type}
-            invoke-static {v0}, $DICTIONARY_RUNTIME->isVoiceDictionaryScreen(Landroid/os/Bundle;)Z
+            ${RuntimeCallEmitter.invoke(RuntimeCallId.RAMBLER_DICTIONARY_RUNTIME_IS_VOICE_DICTIONARY_SCREEN, "v0")}
             move-result v0
             if-eqz v0, :rambler
             const/4 v0, 0x0

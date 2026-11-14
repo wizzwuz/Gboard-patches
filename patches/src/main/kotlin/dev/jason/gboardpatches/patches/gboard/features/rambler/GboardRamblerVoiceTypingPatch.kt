@@ -16,6 +16,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import dev.jason.gboardpatches.patches.gboard.shared.GboardFlagFamilyFeature
+import dev.jason.gboardpatches.patches.gboard.shared.generated.GboardTargetAdmission
 import dev.jason.gboardpatches.patches.gboard.shared.gboardFlagFamilyFeaturePatch
 import dev.jason.gboardpatches.patches.gboard.shared.gboardPatchesExtensionCarrierPatch
 import dev.jason.gboardpatches.patches.shared.Constants.COMPATIBILITY_GBOARD
@@ -104,7 +105,9 @@ internal fun firstRunRamblerDefaultIndex(instructions: List<Instruction>): Int {
 
 @Suppress("unused")
 val ramblerVoiceTyping = bytecodePatch(
-    name = "Rambler voice typing",
+    name = "Rambler voice typing".takeIf {
+        GboardTargetAdmission.admittedContributions("advanced_voice_typing").isNotEmpty()
+    },
     description = "Adds Google's Rambler to Gboard settings → Voice typing, as a choice next to Standard voice typing. " +
         "Rambler sends your speech to Google's servers, which turn it into finished text and carry out spoken edits. " +
         "Standard stays the default.",

@@ -18,7 +18,10 @@ import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethodParameter
 import com.android.tools.smali.dexlib2.immutable.reference.ImmutableMethodReference
+import dev.jason.gboardpatches.patches.gboard.shared.generated.GboardTargetAdmission
 import dev.jason.gboardpatches.patches.gboard.shared.gboardPatchesExtensionCarrierPatch
+import dev.jason.gboardpatches.patches.gboard.shared.runtimeabi.RuntimeCallEmitter
+import dev.jason.gboardpatches.patches.gboard.shared.runtimeabi.RuntimeCallId
 import dev.jason.gboardpatches.patches.shared.Constants.COMPATIBILITY_GBOARD
 import org.w3c.dom.Document
 import org.w3c.dom.Element
@@ -31,7 +34,6 @@ import org.w3c.dom.Element
 private const val ANDROID_NS = "http://schemas.android.com/apk/res/android"
 private const val RAMBLER_SETTINGS_SCREEN = "res/xml/setting_rambler_voice_typing.xml"
 private const val RECOGNIZER_CALLBACK = "com/google/android/apps/inputmethod/libs/voiceime/VoiceInputManager\$RecognizerCallback"
-private const val SILENCE_RUNTIME = "Ldev/jason/gboardpatches/extension/rambler/GboardRamblerSilenceRuntime;"
 private const val DURATION = "Lj\$/time/Duration;"
 private const val STRING = "Ljava/lang/String;"
 
@@ -239,7 +241,7 @@ internal val silenceStopTimer = bytecodePatch(
             "invoke-virtual {v2, v4, v3}, ${wiring.readString.smali()}",
             "move-result-object v3",
             ":read",
-            "invoke-static {v1, v3}, $SILENCE_RUNTIME->onSessionStart(Z$STRING)J",
+            RuntimeCallEmitter.invoke(RuntimeCallId.RAMBLER_SILENCE_RUNTIME_ON_SESSION_START, "v1, v3"),
             "move-result-wide v1",
             "const-wide/16 v3, 0x0",
             "cmp-long v5, v1, v3",
@@ -255,7 +257,7 @@ internal val silenceStopTimer = bytecodePatch(
         addHelper(LEVEL_HELPER, listOf(callback.type, "I"), 6, listOf(
             "iget-object v0, p0, ${wiring.manager.smali()}",
             "iget-boolean v1, v0, ${wiring.ramblerSession.smali()}",
-            "invoke-static {v1, p1}, $SILENCE_RUNTIME->onSpeechLevel(ZI)Z",
+            RuntimeCallEmitter.invoke(RuntimeCallId.RAMBLER_SILENCE_RUNTIME_ON_SPEECH_LEVEL, "v1, p1"),
             "move-result v1",
             "if-eqz v1, :done",
             "iget-object v2, v0, ${wiring.timer.smali()}",
@@ -267,7 +269,7 @@ internal val silenceStopTimer = bytecodePatch(
         addHelper(UPDATE_HELPER, listOf(callback.type, update.parameterTypes.single().toString()), 4, listOf(
             "iget-object v0, p0, ${wiring.manager.smali()}",
             "iget-boolean v1, v0, ${wiring.ramblerSession.smali()}",
-            "invoke-static {v1, p1}, $SILENCE_RUNTIME->onTranscriptionUpdate(ZLjava/lang/Object;)Z",
+            RuntimeCallEmitter.invoke(RuntimeCallId.RAMBLER_SILENCE_RUNTIME_ON_TRANSCRIPTION_UPDATE, "v1, p1"),
             "return-void",
         ))
 
@@ -275,13 +277,15 @@ internal val silenceStopTimer = bytecodePatch(
         levelUpdate.addInstructions(0, "invoke-static {p0, p1}, ${callback.type}->$LEVEL_HELPER(${callback.type}I)V")
         update.addInstructions(0, "invoke-static {p0, p1}, ${callback.type}->$UPDATE_HELPER(${callback.type}${update.parameterTypes.single()})V")
         // Record why listening stops, so a session that does not stop can be diagnosed from logcat.
-        stopListening.addInstructions(0, "invoke-static {p1}, $SILENCE_RUNTIME->onStopListening(Ljava/lang/Object;)V")
+        stopListening.addInstructions(0, RuntimeCallEmitter.invoke(RuntimeCallId.RAMBLER_SILENCE_RUNTIME_ON_STOP_LISTENING, "p1"))
     }
 }
 
 @Suppress("unused")
 val ramblerSilenceStop = bytecodePatch(
-    name = "Rambler stop after silence",
+    name = "Rambler stop after silence".takeIf {
+        GboardTargetAdmission.admittedContributions("advanced_voice_typing").isNotEmpty()
+    },
     description = "Rambler stops by itself after 3 seconds without speech and keeps the text, as when you tap ✓. " +
         "Change the time (3, 5, 8 or 10 seconds) or switch it off under Gboard settings → Voice typing → Rambler → " +
         "Stop after silence. Requires Rambler voice typing.",

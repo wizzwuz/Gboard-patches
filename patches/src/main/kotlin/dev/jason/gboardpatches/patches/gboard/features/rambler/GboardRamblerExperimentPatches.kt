@@ -4,6 +4,7 @@ import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.resourcePatch
 import dev.jason.gboardpatches.patches.gboard.shared.GboardFlagFamilyFeature
+import dev.jason.gboardpatches.patches.gboard.shared.generated.GboardTargetAdmission
 import dev.jason.gboardpatches.patches.gboard.shared.gboardFlagFamilyFeaturePatch
 import dev.jason.gboardpatches.patches.gboard.shared.gboardPatchesExtensionCarrierPatch
 import dev.jason.gboardpatches.patches.shared.Constants.COMPATIBILITY_GBOARD
@@ -90,7 +91,9 @@ internal val customInstructionSettings = resourcePatch(
 
 @Suppress("unused")
 val ramblerCustomInstructions = bytecodePatch(
-    name = "Rambler custom instructions",
+    name = "Rambler custom instructions".takeIf {
+        GboardTargetAdmission.admittedContributions("advanced_voice_typing").isNotEmpty()
+    },
     description = "Adds Custom instructions to Gboard settings → Voice typing → Rambler. Your text is added to " +
         "Rambler's own instructions, not a replacement for them: Rambler receives it with every dictation and " +
         "follows it for style only, such as spelling, punctuation, vocabulary and tone. For example: \"Write every " +
@@ -109,7 +112,9 @@ val ramblerCustomInstructions = bytecodePatch(
 
 @Suppress("unused")
 val ramblerCursorEditing = bytecodePatch(
-    name = "Rambler cursor-aware editing",
+    name = "Rambler cursor-aware editing".takeIf {
+        GboardTargetAdmission.admittedContributions("advanced_voice_typing").isNotEmpty()
+    },
     description = "Rambler also sees the text after the cursor, so spoken edits reach the whole text and dictating " +
         "in the middle of a text fits in. With text selected, only the selection is sent, so a spoken edit such as " +
         "\"make this more formal\" applies to it, and the result is selected again for the next edit. " +
@@ -128,7 +133,9 @@ val ramblerCursorEditing = bytecodePatch(
 
 @Suppress("unused")
 val ramblerAppContext = bytecodePatch(
-    name = "Rambler app context",
+    name = "Rambler app context".takeIf {
+        GboardTargetAdmission.admittedContributions("advanced_voice_typing").isNotEmpty()
+    },
     description = "Rambler also receives the name of the app you dictate in and the text field's hint, so it can " +
         "match the tone of a chat, an e-mail or a search, and custom instructions can depend on the app. This " +
         "tells Google which app you are typing in. Requires Rambler voice typing.",

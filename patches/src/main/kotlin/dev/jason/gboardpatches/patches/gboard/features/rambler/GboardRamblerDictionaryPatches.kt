@@ -23,14 +23,17 @@ import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethodParameter
 import com.android.tools.smali.dexlib2.immutable.reference.ImmutableMethodReference
 import dev.jason.gboardpatches.patches.gboard.shared.GboardFlagFamilyFeature
+import dev.jason.gboardpatches.patches.gboard.shared.generated.GboardTargetAdmission
 import dev.jason.gboardpatches.patches.gboard.shared.gboardFlagFamilyFeaturePatch
 import dev.jason.gboardpatches.patches.gboard.shared.gboardPatchesExtensionCarrierPatch
+import dev.jason.gboardpatches.patches.gboard.shared.runtimeabi.RuntimeAbiCatalog
+import dev.jason.gboardpatches.patches.gboard.shared.runtimeabi.RuntimeCallEmitter
+import dev.jason.gboardpatches.patches.gboard.shared.runtimeabi.RuntimeCallId
 import dev.jason.gboardpatches.patches.shared.Constants.COMPATIBILITY_GBOARD
 
 internal const val CORRECTION_LIST_FRAGMENT =
     "Lcom/google/android/apps/inputmethod/latin/preference/VoiceCorrectionListFragment;"
 internal const val MODULE_MANAGER = "Lcom/google/android/libraries/inputmethod/module/ModuleManager;"
-private const val CONTACTS_RUNTIME = "Ldev/jason/gboardpatches/extension/rambler/GboardRamblerContactsRuntime;"
 private const val CONTEXT_TYPE = "Landroid/content/Context;"
 private const val CLASS_TYPE = "Ljava/lang/Class;"
 private const val WORD_SET = "Ljava/util/LinkedHashSet;"
@@ -43,7 +46,9 @@ internal val ramblerDictionaryFlags = gboardFlagFamilyFeaturePatch(
 
 @Suppress("unused")
 val ramblerPersonalDictionary = bytecodePatch(
-    name = "Rambler personal dictionary",
+    name = "Rambler personal dictionary".takeIf {
+        GboardTargetAdmission.admittedContributions("advanced_voice_typing").isNotEmpty()
+    },
     description = "Adds Voice dictionary to Gboard settings → Voice typing, with Gboard's voice correction list: names " +
         "and words you add, import or export, which Rambler receives with every dictation so it spells them right. " +
         "Requires Rambler voice typing.",
@@ -173,7 +178,9 @@ private fun FieldReference.smali() = listSmali()
 
 @Suppress("unused")
 val ramblerContactNames = bytecodePatch(
-    name = "Rambler contact names",
+    name = "Rambler contact names".takeIf {
+        GboardTargetAdmission.admittedContributions("advanced_voice_typing").isNotEmpty()
+    },
     description = "Adds your contacts' names to Rambler's voice correction list, so Rambler spells them right. Names " +
         "you delete from the list are not added again; new contacts are added the next time Rambler starts. Needs " +
         "Gboard's contacts access, which Gboard asks for when you switch on Contact names. Requires Rambler personal dictionary.",
@@ -187,7 +194,8 @@ val ramblerContactNames = bytecodePatch(
 
         // Give the runtime's placeholder Gboard's own import call, made only once the list's store
         // can be read; before that Gboard drops the words without a trace.
-        val runtime = mutableClassDefBy(CONTACTS_RUNTIME)
+        val runtimeOwner = RuntimeAbiCatalog.abi(RuntimeCallId.RAMBLER_CONTACTS_RUNTIME_ON_RAMBLER_START).owner
+        val runtime = mutableClassDefBy(runtimeOwner)
         val placeholder = runtime.methods.singleOrNull {
             it.name == "addToVoiceCorrectionList" && AccessFlags.STATIC.isSet(it.accessFlags) &&
                 it.parameterTypes.map(CharSequence::toString) == listOf(CONTEXT_TYPE, WORD_SET) && it.returnType == "Z"
@@ -245,7 +253,7 @@ val ramblerContactNames = bytecodePatch(
         val contextField = (contextRead as ReferenceInstruction).reference as FieldReference
         start.addInstructions(0, """
             iget-object v0, p0, ${contextField.smali()}
-            invoke-static {v0}, $CONTACTS_RUNTIME->onRamblerStart($CONTEXT_TYPE)V
+            ${RuntimeCallEmitter.invoke(RuntimeCallId.RAMBLER_CONTACTS_RUNTIME_ON_RAMBLER_START, "v0")}
         """)
     }
 }
