@@ -119,8 +119,12 @@ internal val silenceStopSettings = resourcePatch(
         }
         if (!get("res/values/arrays.xml").isFile) throw PatchException("res/values/arrays.xml not found")
         document("res/values/arrays.xml").use(::addSilenceStopArrays)
-        if (!get(RAMBLER_SETTINGS_SCREEN).isFile) throw PatchException("$RAMBLER_SETTINGS_SCREEN not found")
-        document(RAMBLER_SETTINGS_SCREEN).use(::addSilenceStopPreference)
+        val screenPath = when {
+            get(RAMBLER_SETTINGS_SCREEN).isFile -> RAMBLER_SETTINGS_SCREEN
+            get("res/xml/setting_jetson_voice.xml").isFile -> "res/xml/setting_jetson_voice.xml"
+            else -> throw PatchException("Neither $RAMBLER_SETTINGS_SCREEN nor res/xml/setting_jetson_voice.xml found")
+        }
+        document(screenPath).use(::addSilenceStopPreference)
     }
 }
 

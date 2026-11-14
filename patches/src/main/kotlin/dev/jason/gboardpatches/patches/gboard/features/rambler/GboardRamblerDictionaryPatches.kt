@@ -189,6 +189,11 @@ val ramblerContactNames = bytecodePatch(
     dependsOn(gboardPatchesExtensionCarrierPatch, ramblerPersonalDictionary)
 
     execute {
+        // Gboard 18.5.4 does not have VoiceCorrectionListFragment (introduced in 18.6.x).
+        // If absent, skip bytecode wiring; contacts runtime placeholder safely remains un-wired.
+        if (classDefByOrNull(CORRECTION_LIST_FRAGMENT) == null) {
+            return@execute
+        }
         val site = resolveCorrectionListImport()
         val read = correctionListRead(classDefBy(site.statsStore), site)
 

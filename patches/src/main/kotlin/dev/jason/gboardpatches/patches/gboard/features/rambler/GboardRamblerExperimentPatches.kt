@@ -84,8 +84,12 @@ internal val customInstructionSettings = resourcePatch(
                 }
             }
         }
-        if (!get(RAMBLER_SETTINGS).isFile) throw PatchException("$RAMBLER_SETTINGS not found")
-        document(RAMBLER_SETTINGS).use(::addCustomInstructionPreference)
+        val screenPath = when {
+            get(RAMBLER_SETTINGS).isFile -> RAMBLER_SETTINGS
+            get("res/xml/setting_jetson_voice.xml").isFile -> "res/xml/setting_jetson_voice.xml"
+            else -> throw PatchException("Neither $RAMBLER_SETTINGS nor res/xml/setting_jetson_voice.xml found")
+        }
+        document(screenPath).use(::addCustomInstructionPreference)
     }
 }
 

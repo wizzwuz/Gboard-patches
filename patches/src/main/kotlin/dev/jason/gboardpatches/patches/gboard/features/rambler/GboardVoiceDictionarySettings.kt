@@ -148,6 +148,11 @@ internal val voiceDictionaryScreens = resourcePatch(
                 }
             }
         }
+        // In Gboard 18.5.4, res/xml/setting_rambler_voice_typing.xml does not exist;
+        // Rambler dictionary settings already reside directly in res/xml/setting_jetson_voice.xml.
+        if (!get(RAMBLER_SCREEN).isFile) {
+            return@execute
+        }
         for (path in listOf(RAMBLER_SCREEN, DICTIONARY_SCREEN, VOICE_SCREEN)) {
             if (!get(path).isFile) throw PatchException("$path not found")
         }
@@ -187,10 +192,12 @@ internal val voiceDictionaryFragment = bytecodePatch(
 
     execute {
         val fragment = mutableClassDefBy(RAMBLER_FRAGMENT_TYPE)
+        // In Gboard 18.5.4, JetsonVoiceSettingsFragment inflates setting_jetson_voice.xml directly
+        // and does not have the static layout choice method layoutFor(Z)I introduced in 18.6.3.
         val layoutFor = fragment.methods.singleOrNull {
             AccessFlags.STATIC.isSet(it.accessFlags) && it.returnType == "I" &&
                 it.parameterTypes.map(CharSequence::toString) == listOf("Z")
-        } ?: throw PatchException("Rambler settings layout choice not found")
+        } ?: return@execute
         val layout = fragment.methods.singleOrNull { method ->
             !AccessFlags.STATIC.isSet(method.accessFlags) && method.returnType == "I" && method.parameterTypes.isEmpty() &&
                 method.implementation?.instructions?.any {
@@ -198,7 +205,7 @@ internal val voiceDictionaryFragment = bytecodePatch(
                         ref.definingClass == fragment.type && ref.name == layoutFor.name
                     }
                 } == true
-        } ?: throw PatchException("Rambler settings layout method not found")
+        } ?: return@execute
         // v0 is the only register in 18.6.3 (it is also `this`), which is fine as long as the original
         // body overwrites it before reading it; then the injected code may reuse it.
         val registers = layout.implementation?.registerCount ?: 0
