@@ -920,8 +920,8 @@ object GboardPublishedPatchCatalog {
         gboardSignatureBypassPatch,
     ).filterTo(linkedSetOf()) { patch -> patch.name != null }
 
-    fun publishedInventory(version: String): String {
-        val publishedPatches = morpheRegistrations.sortedBy { patch -> patch.name }.map { patch ->
+    fun publishedInventory(version: String, patches: Set<Patch<*>> = morpheRegistrations): String {
+        val publishedPatches = patches.sortedBy { patch -> patch.name }.map { patch ->
             PublishedPatch(
                 name = patch.name!!,
                 description = patch.description,

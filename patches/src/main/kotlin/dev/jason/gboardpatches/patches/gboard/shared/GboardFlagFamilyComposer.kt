@@ -118,6 +118,31 @@ internal enum class GboardFlagFamilyFeature(
         RuntimeCallId.KEYPRESS_HAPTICS_RUNTIME_APPLY_FLAG_VALUE,
         GboardFlagFamilyArgumentShape.FLAG_NAME_AND_RESULT,
     ),
+    RAMBLER_CLOUD(
+        1500,
+        RuntimeCallId.RAMBLER_CLOUD_RUNTIME_APPLY_FLAG_VALUE,
+        GboardFlagFamilyArgumentShape.FLAG_NAME_AND_RESULT,
+    ),
+    RAMBLER_DICTIONARY(
+        1510,
+        RuntimeCallId.RAMBLER_DICTIONARY_RUNTIME_APPLY_FLAG_VALUE,
+        GboardFlagFamilyArgumentShape.FLAG_NAME_AND_RESULT,
+    ),
+    RAMBLER_CUSTOM_INSTRUCTIONS(
+        1520,
+        RuntimeCallId.RAMBLER_CUSTOM_INSTRUCTIONS_RUNTIME_APPLY_FLAG_VALUE,
+        GboardFlagFamilyArgumentShape.FLAG_NAME_AND_RESULT,
+    ),
+    RAMBLER_CURSOR_EDITING(
+        1530,
+        RuntimeCallId.RAMBLER_CURSOR_EDITING_RUNTIME_APPLY_FLAG_VALUE,
+        GboardFlagFamilyArgumentShape.FLAG_NAME_AND_RESULT,
+    ),
+    RAMBLER_APP_CONTEXT(
+        1540,
+        RuntimeCallId.RAMBLER_APP_CONTEXT_RUNTIME_APPLY_FLAG_VALUE,
+        GboardFlagFamilyArgumentShape.FLAG_NAME_AND_RESULT,
+    ),
     ;
 
     val spec: GboardFlagFamilyFeatureSpec
@@ -659,6 +684,26 @@ private fun emitFlagFamilyRuntimeCall(call: RuntimeCallId, registers: String): S
         RuntimeCallId.QUICK_INSERT_RUNTIME_APPLY_FLAG_VALUE,
         registers,
     )
+    RuntimeCallId.RAMBLER_CLOUD_RUNTIME_APPLY_FLAG_VALUE -> RuntimeCallEmitter.invoke(
+        RuntimeCallId.RAMBLER_CLOUD_RUNTIME_APPLY_FLAG_VALUE,
+        registers,
+    )
+    RuntimeCallId.RAMBLER_DICTIONARY_RUNTIME_APPLY_FLAG_VALUE -> RuntimeCallEmitter.invoke(
+        RuntimeCallId.RAMBLER_DICTIONARY_RUNTIME_APPLY_FLAG_VALUE,
+        registers,
+    )
+    RuntimeCallId.RAMBLER_CUSTOM_INSTRUCTIONS_RUNTIME_APPLY_FLAG_VALUE -> RuntimeCallEmitter.invoke(
+        RuntimeCallId.RAMBLER_CUSTOM_INSTRUCTIONS_RUNTIME_APPLY_FLAG_VALUE,
+        registers,
+    )
+    RuntimeCallId.RAMBLER_CURSOR_EDITING_RUNTIME_APPLY_FLAG_VALUE -> RuntimeCallEmitter.invoke(
+        RuntimeCallId.RAMBLER_CURSOR_EDITING_RUNTIME_APPLY_FLAG_VALUE,
+        registers,
+    )
+    RuntimeCallId.RAMBLER_APP_CONTEXT_RUNTIME_APPLY_FLAG_VALUE -> RuntimeCallEmitter.invoke(
+        RuntimeCallId.RAMBLER_APP_CONTEXT_RUNTIME_APPLY_FLAG_VALUE,
+        registers,
+    )
     else -> error("Runtime call $call does not belong to the flag family")
 }
 
@@ -698,4 +743,9 @@ private val ALL_FLAG_FAMILY_RUNTIME_CALLS: Set<RuntimeCallId> = setOf(
     RuntimeCallId.KEY_SHAPE_SELECTION_RUNTIME_APPLY_FLAG_VALUE,
     RuntimeCallId.OCR_RUNTIME_APPLY_FLAG_VALUE,
     RuntimeCallId.QUICK_INSERT_RUNTIME_APPLY_FLAG_VALUE,
+    RuntimeCallId.RAMBLER_CLOUD_RUNTIME_APPLY_FLAG_VALUE,
+    RuntimeCallId.RAMBLER_DICTIONARY_RUNTIME_APPLY_FLAG_VALUE,
+    RuntimeCallId.RAMBLER_CUSTOM_INSTRUCTIONS_RUNTIME_APPLY_FLAG_VALUE,
+    RuntimeCallId.RAMBLER_CURSOR_EDITING_RUNTIME_APPLY_FLAG_VALUE,
+    RuntimeCallId.RAMBLER_APP_CONTEXT_RUNTIME_APPLY_FLAG_VALUE,
 )

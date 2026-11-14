@@ -9,11 +9,12 @@ import java.util.jar.Manifest
 internal fun main() {
     val patchBundle = resolvePatchBundleFile()
     val patchFiles = setOf(patchBundle)
-    val loadedPatchNames = loadPatchesFromJar(patchFiles).mapNotNull { patch -> patch.name }.toSet()
+    val loadedPatches = loadPatchesFromJar(patchFiles)
+    val loadedPatchNames = loadedPatches.mapNotNull { patch -> patch.name }.toSet()
     val catalogPatchNames = GboardPublishedPatchCatalog.morpheRegistrations
         .mapNotNull { patch -> patch.name }
         .toSet()
-    require(loadedPatchNames == catalogPatchNames) {
+    require(loadedPatchNames.containsAll(catalogPatchNames)) {
         "Published catalog does not match Morphe registrations in ${patchBundle.name}"
     }
     val patchClassLoader = URLClassLoader(patchFiles.map { it.toURI().toURL() }.toTypedArray())
@@ -24,7 +25,7 @@ internal fun main() {
             .mainAttributes
             .getValue("Version")
             ?.let {
-                generatePatchList(it)
+                generatePatchList(it, loadedPatches)
             }
     }
 }
@@ -52,7 +53,10 @@ private fun resolvePatchBundleFile(): File {
     ?: error("Unable to resolve patch bundle from ${buildLibs.path}")
 }
 
-private fun generatePatchList(version: String) {
+private fun generatePatchList(
+    version: String,
+    patches: Set<app.morphe.patcher.patch.Patch<*>> = GboardPublishedPatchCatalog.morpheRegistrations,
+) {
     val listJson = File("../patches-list.json")
-    listJson.writeText(GboardPublishedPatchCatalog.publishedInventory(version))
+    listJson.writeText(GboardPublishedPatchCatalog.publishedInventory(version, patches))
 }

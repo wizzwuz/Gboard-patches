@@ -4,6 +4,11 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        maven {
+            name = "CodebergMorphe"
+            url = uri("https://codeberg.org/api/packages/JohninNL/maven")
+            content { includeGroupByRegex("app\\.morphe(\\..*)?") }
+        }
     }
 }
 
@@ -11,6 +16,11 @@ pluginManagement {
     repositories {
         gradlePluginPortal()
         google()
+        maven {
+            name = "CodebergMorphe"
+            url = uri("https://codeberg.org/api/packages/JohninNL/maven")
+            content { includeGroupByRegex("app\\.morphe(\\..*)?") }
+        }
         maven {
             name = "GitHubPackages"
             url = uri("https://maven.pkg.github.com/MorpheApp/registry")

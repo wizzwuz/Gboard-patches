@@ -1,0 +1,106 @@
+name: Build Patches
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Patches
+    permissions:
+      contents: write
+      packages: read
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Cache Gradle
+        uses: burrunan/gradle-cache-action@v3
+
+      - name: Make Gradle wrapper executable
+        run: chmod +x ./gradlew
+
+      - name: Resolve Version
+        id: version
+        shell: bash
+        run: |
+          VERSION=$(grep -E '^\s*version\s*=' gradle.properties | cut -d'=' -f2 | tr -d ' ')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Run Tests
+        env:
+          GITHUB_ACTOR: ${{ github.repository_owner }}
+          GITHUB_TOKEN: ${{ secrets.MORPHE_PACKAGES_TOKEN || secrets.GITHUB_TOKEN }}
+        run: ./gradlew :extensions:extension:testDebugUnitTest :patches:test
+
+      - name: Build
+        env:
+          GITHUB_ACTOR: ${{ github.repository_owner }}
+          GITHUB_TOKEN: ${{ secrets.MORPHE_PACKAGES_TOKEN || secrets.GITHUB_TOKEN }}
+        run: ./gradlew :patches:buildAndroid generatePatchesList
+
+      - name: Stage Patches
+        run: |
+          mkdir -p dist
+          echo "=== patches/build/libs content ==="
+          ls -la patches/build/libs/
+          find patches/build/libs/ -type f \( -name "*.mpp" -o -name "*.jar" \) -exec cp -v {} dist/ \;
+          for f in dist/patches-*.mpp; do
+            if [ -f "$f" ]; then
+              cp -v "$f" dist/gboard-patches.mpp
+            fi
+          done
+          cp -v patches-bundle.json dist/ || true
+          cp -v patches-list.json dist/ || true
+          echo "=== dist content ==="
+          ls -la dist/
+
+      - name: Upload Patch Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: gboard-patches
+          path: dist/
+
+      - name: Upload MPP Patch File
+        uses: actions/upload-artifact@v4
+        with:
+          name: mpp-patch-file
+          path: dist/*.mpp
+
+      - name: Publish GitHub Release
+        if: github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          name: "v${{ steps.version.outputs.version }} (Rambler Voice Typing & Patches)"
+          body: |
+            ### Gboard Patches v${{ steps.version.outputs.version }}
+            - **Rambler voice typing**: Adds Google's Rambler to Gboard settings → Voice typing.
+            - **Rambler stop after silence**: Automatic stop after silence with customizable duration.
+            - **Rambler personal dictionary**: Voice correction list with words and names.
+            - **Rambler contact names**: Syncs contacts to voice correction list for accurate dictation spelling.
+            - **Rambler custom instructions**: Custom style instructions for Rambler dictations.
+            - **Rambler cursor-aware editing**: Full-text and selected text context awareness.
+            - **Rambler app context**: App context awareness and field hint integration.
+            
+            #### Direct Download:
+            Download **`patches-${{ steps.version.outputs.version }}.mpp`** below to load directly into Morphe or ReVanced Manager.
+          files: |
+            dist/*.mpp
+            dist/patches-bundle.json
+            dist/patches-list.json
+          token: ${{ secrets.GITHUB_TOKEN }}
+          prerelease: false
+          make_latest: true
